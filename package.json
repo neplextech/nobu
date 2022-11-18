@@ -1,0 +1,27 @@
+{
+  "name": "viewportable",
+  "version": "0.1.0",
+  "description": "A web browser for developers",
+  "main": "./dist/main.js",
+  "scripts": {
+    "test": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Archaeopteryx1/viewportable.git"
+  },
+  "keywords": [
+    "viewport",
+    "browser",
+    "custom",
+    "api",
+    "web",
+    "dev"
+  ],
+  "author": "Archaeopteryx1",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Archaeopteryx1/viewportable/issues"
+  },
+  "homepage": "https://github.com/Archaeopteryx1/viewportable#readme"
+}
