@@ -1,22 +1,29 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
-type EventListener = (event: IpcRendererEvent, ...args: any[]) => void;
-
 export const NobuBrowserContext = {
-    on(channel: string, listener: EventListener) {
-        ipcRenderer.on(channel, listener);
+    on<K extends keyof NobuDispatchChannels>(
+        channel: K,
+        listener: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
+    ) {
+        ipcRenderer.on(channel, listener as any);
     },
 
-    once(channel: string, listener: EventListener) {
-        ipcRenderer.once(channel, listener);
+    once<K extends keyof NobuDispatchChannels>(
+        channel: K,
+        listener: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
+    ) {
+        ipcRenderer.once(channel, listener as any);
     },
 
-    off(channel: string, listener: EventListener) {
-        ipcRenderer.off(channel, listener);
+    off<K extends keyof NobuDispatchChannels>(
+        channel: K,
+        listener: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
+    ) {
+        ipcRenderer.off(channel, listener as any);
     },
 
-    send(channel: string, ...message: any[]) {
-        ipcRenderer.send(channel, ...message);
+    send<K extends keyof NobuIncomingChannels>(channel: K, ...message: NobuIncomingChannels[K]) {
+        ipcRenderer.send(channel as unknown as string, ...(message as any[]));
     }
 };
 

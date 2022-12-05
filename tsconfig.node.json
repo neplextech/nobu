@@ -28,6 +28,7 @@
         },
     },
     "include": [
-        "./src/nobu"
+        "./src/nobu",
+        "global.d.ts"
     ]
 }

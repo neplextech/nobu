@@ -34,7 +34,8 @@
     },
     "include": [
         "src/renderer",
-        "dist"
+        "dist",
+        "global.d.ts"
     ],
     "references": [
         {
