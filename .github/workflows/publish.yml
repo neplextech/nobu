@@ -9,7 +9,7 @@ jobs:
         runs-on: windows-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version: "18.12.1"
             - name: Install dependencies
@@ -24,7 +24,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version: "18.12.1"
             - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
         runs-on: macos-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v3
               with:
                   node-version: "18.12.1"
             - name: Install dependencies
