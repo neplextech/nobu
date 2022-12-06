@@ -20,7 +20,7 @@ jobs:
             - name: Build
               run: npm run build
             - name: Publish
-              run: npm run deploy --x64 --ia32 -w
+              run: npm run deploy --x64 --ia32 --win
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     linux:
@@ -35,7 +35,7 @@ jobs:
             - name: Build
               run: npm run build
             - name: Publish
-              run: npm run deploy --x64 --ia32 -l
+              run: npm run deploy --x64 --ia32 --linux
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
@@ -50,6 +50,6 @@ jobs:
             - name: Build
               run: npm run build
             - name: Publish
-              run: npm run deploy --x64 -m
+              run: npm run deploy --x64 --armv7l --arm64 --mac
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
