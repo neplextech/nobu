@@ -14,8 +14,10 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
+            - name: Build
+              run: npm run build
             - name: Publish
-              run: npm run build && npm run deploy --x64 --ia32 -w
+              run: npm run deploy --x64 --ia32 -w
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     linux:
@@ -27,8 +29,10 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
+            - name: Build
+              run: npm run build
             - name: Publish
-              run: npm run build && npm run deploy --x64 --ia32 -l
+              run: npm run deploy --x64 --ia32 -l
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
@@ -40,7 +44,9 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
-            - name: Publish
-              run: npm run build && npm run deploy --x64 -m
+            - name: Build
+              run: npm run build
+            -name: Publish
+              run: npm run deploy --x64 -m
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
