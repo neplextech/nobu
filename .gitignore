@@ -2,3 +2,4 @@ node_modules/
 app/
 dist/
 builds/
+.DS_Store
