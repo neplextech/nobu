@@ -15,7 +15,7 @@ jobs:
             - name: Install dependencies
               run: yarn install
             - name: Publish
-              run: yarn deploy --x64 --ia32 -w
+              run: yarn build && yarn deploy --x64 --ia32 -w
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     linux:
@@ -28,7 +28,7 @@ jobs:
             - name: Install dependencies
               run: yarn install
             - name: Publish
-              run: yarn deploy --x64 --ia32 -l
+              run: yarn build && yarn deploy --x64 --ia32 -l
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     mac:
@@ -41,6 +41,6 @@ jobs:
             - name: Install dependencies
               run: yarn install
             - name: Publish
-              run: yarn deploy --x64 -m
+              run: yarn build && yarn deploy --x64 -m
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
