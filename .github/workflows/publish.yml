@@ -1,0 +1,46 @@
+name: Publish Nobu
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+jobs:
+    windows:
+        runs-on: windows-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "18.12.1"
+            - name: Install dependencies
+              run: yarn install
+            - name: Publish
+              run: yarn deploy --x64 --ia32 -w
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    linux:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "18.12.1"
+            - name: Install dependencies
+              run: yarn install
+            - name: Publish
+              run: yarn deploy --x64 --ia32 -l
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    mac:
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v2
+            - uses: actions/setup-node@v2
+              with:
+                  node-version: "18.12.1"
+            - name: Install dependencies
+              run: yarn install
+            - name: Publish
+              run: yarn deploy --x64 -m
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
