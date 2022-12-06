@@ -46,7 +46,7 @@ jobs:
               run: yarn install
             - name: Build
               run: npm run build
-            -name: Publish
+            - name: Publish
               run: npm run deploy --x64 -m
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
