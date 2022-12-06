@@ -11,6 +11,7 @@ interface WCEvents {
     "did-start-loading": (event: Electron.Event) => any;
     "page-title-updated": (event: Electron.Event, title: string) => any;
     "page-favicon-updated": (event: Electron.Event, icons: string[]) => any;
+    "context-menu": (event: Electron.Event, params: Electron.ContextMenuParams) => any;
 }
 
 export class BrowserTabsManager {
@@ -56,6 +57,15 @@ export class BrowserTabsManager {
                 this.nobu.send("set-favicon", icons[0]);
                 this.broadcastTabs();
             }
+        },
+        "context-menu": (event, p) => {
+            if (!this.current) return;
+
+            createContextMenu({
+                ...p,
+                view: this.current,
+                nobu: this.nobu
+            });
         }
     } as WCEvents);
     public constructor(public nobu: NobuBrowser) {}
@@ -63,21 +73,25 @@ export class BrowserTabsManager {
     private _attachListeners(view: BrowserView) {
         this._channels.forEach(([name, listener]) => {
             view.webContents.on(name as any, listener);
-            view.webContents.on("context-menu", (_, p) => {
-                if (!this.current) return;
-
-                createContextMenu({
-                    view: this.current,
-                    x: p.x,
-                    y: p.y
-                });
-            });
+        });
+        view.webContents.setWindowOpenHandler((details) => {
+            this.openInNewTab(details.url, details.referrer);
+            return { action: "deny" };
         });
     }
 
     private _removeListeners(view: BrowserView) {
         this._channels.forEach(([name, listener]) => {
             view.webContents.off(name as any, listener);
+        });
+    }
+
+    public openInNewTab(url: string, referrer?: string | Electron.Referrer) {
+        const tab = this.new();
+        this.setCurrentTab(tab);
+        this.resize(tab);
+        tab.webContents.loadURL(url, {
+            httpReferrer: referrer
         });
     }
 

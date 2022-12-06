@@ -1,17 +1,24 @@
 import { BrowserView, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
+import { NobuBrowser } from "../NobuBrowser";
 
-interface ctxMenuProps {
+interface ctxMenuProps extends Electron.ContextMenuParams {
     view: BrowserView;
-    x?: number;
-    y?: number;
+    nobu: NobuBrowser;
 }
 
 export function createContextMenu(props: ctxMenuProps) {
-    const { view, x, y } = props;
+    const { view, x, y, nobu } = props;
 
     if (view.webContents.isLoading()) return;
 
     const template: MenuItemConstructorOptions[] = [
+        {
+            label: "Open Link in New Tab",
+            click() {
+                nobu.tabs.openInNewTab(props.linkURL);
+            },
+            visible: !!props.linkURL
+        },
         {
             label: "Back",
             click() {

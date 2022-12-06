@@ -39,7 +39,7 @@ export function ActionNavigation() {
                                 />
                             );
                         })}
-                        <div className="ml-3">
+                        <div className="ml-3 mr-5">
                             <VscAdd
                                 className="h-5 w-5 text-white"
                                 onClick={() => {

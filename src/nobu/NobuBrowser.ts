@@ -53,7 +53,7 @@ export class NobuBrowser {
                 preload: `${__dirname}/preload/main.js`
             },
             show: false,
-            icon: `${__dirname}/../public/nobu.png`,
+            icon: `file://${__dirname}/../public/nobu.png`,
             backgroundColor: "#2b2b2b"
         });
 
