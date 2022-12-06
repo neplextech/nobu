@@ -21,25 +21,22 @@ export class BrowserTabsManager {
     private _channels = Object.entries({
         "did-finish-load": (event) => {
             this.nobu.send("reloaded");
-            const currentURL = this.getCurrentURL();
-            if (currentURL) this.nobu.send("set-url", currentURL);
+            this.emitCurrentURL();
             this.emitHistoryPossibilities();
             this.broadcastTabs();
         },
         "did-navigate-in-page": (event, url) => {
-            this.nobu.send("set-url", url);
+            this.emitCurrentURL();
             this.emitHistoryPossibilities();
         },
         "did-start-loading": (event) => {
             this.nobu.send("reloading");
-            const currentURL = this.getCurrentURL();
-            if (currentURL) this.nobu.send("set-url", currentURL);
+            this.emitCurrentURL();
             this.emitHistoryPossibilities();
             this.broadcastTabs();
         },
         "did-stop-loading": (event) => {
-            const currentURL = this.getCurrentURL();
-            if (currentURL) this.nobu.send("set-url", currentURL);
+            this.emitCurrentURL();
             this.nobu.send("reloaded");
             this.emitHistoryPossibilities();
             this.broadcastTabs();
@@ -107,7 +104,8 @@ export class BrowserTabsManager {
             id: view.webContents.id,
             active: this.current?.webContents.id === view.webContents.id,
             title: view.webContents.getTitle(),
-            loading: view.webContents.isLoading()
+            loading: view.webContents.isLoading(),
+            url: view.webContents.getURL()
         }));
 
         this.nobu.send("set-tabs", tabArray);
@@ -151,6 +149,7 @@ export class BrowserTabsManager {
         if (this.current) this.remove(this.current);
         this.attach(tab);
         this.resize(tab);
+        this.emitCurrentURL();
         this.broadcastTabs();
     }
 
@@ -173,7 +172,7 @@ export class BrowserTabsManager {
         }
     }
 
-    public resolveTab(tabLike: TabResolvable): BrowserView | void {
+    public resolveTab(tabLike: TabResolvable): BrowserView | undefined {
         if (typeof tabLike === "number") {
             return this.views[tabLike];
         }
@@ -198,5 +197,10 @@ export class BrowserTabsManager {
             back: canGoBack,
             forward: canGoForward
         });
+    }
+
+    public emitCurrentURL() {
+        const url = this.getCurrentURL();
+        if (url) this.nobu.send("set-url", url);
     }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { VscClose, VscLoading } from "react-icons/vsc";
 
 export interface BrowserTabProps {
@@ -11,6 +11,22 @@ export interface BrowserTabProps {
 }
 
 export function BrowserTab(props: BrowserTabProps) {
+    const [favicon, setFavicon] = useState(props.icon || "");
+
+    useEffect(() => {
+        if (props.icon) setFavicon(props.icon);
+    }, [props.icon]);
+
+    useEffect(() => {
+        const favListener = (ev: any, icon: string) => {
+            if (icon) setFavicon(icon);
+        };
+
+        Nobu.on("set-favicon", favListener);
+
+        return () => Nobu.off("set-favicon", favListener);
+    }, []);
+
     return (
         <div
             onClick={props.onClick}
@@ -21,8 +37,8 @@ export function BrowserTab(props: BrowserTabProps) {
             <div className="flex space-x-3 w-[90%] place-items-center">
                 {props.loading ? (
                     <VscLoading className="text-blue-500 h-5 w-5 animate-spin" />
-                ) : props.icon ? (
-                    <img src={props.icon} className="h-8 w-8" />
+                ) : favicon ? (
+                    <img src={favicon} className="h-4 w-4" alt="" onError={() => {}} />
                 ) : null}
                 <span className="block text-sm truncate text-left" title={props.title}>
                     {props.title}

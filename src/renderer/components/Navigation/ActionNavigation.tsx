@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { VscAdd, VscClose } from "react-icons/vsc";
+import { VscAdd } from "react-icons/vsc";
 import { NavigationButtons } from "../Action/NavigationButtons";
 import { NavigationInput } from "../Action/NavigationInput";
 import { BrowserTab, BrowserTabProps } from "./BrowserTab";

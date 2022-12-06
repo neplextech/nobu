@@ -29,6 +29,7 @@ declare global {
         "close-tab": [number];
         "set-tab": [number];
         "get-tabs": [];
+        "get-url": [];
     }
 
     interface NobuIncomingChannelsHandler {
@@ -41,6 +42,7 @@ declare global {
         "close-tab": NobuMainListener<NobuIncomingChannels["close-tab"]>;
         "set-tab": NobuMainListener<NobuIncomingChannels["set-tab"]>;
         "get-tabs": NobuMainListener<NobuIncomingChannels["get-tabs"]>;
+        "get-url": NobuMainListener<NobuIncomingChannels["get-url"]>;
     }
 
     interface HistoryPossibilities {

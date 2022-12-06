@@ -39,6 +39,9 @@ export class NobuBrowser {
         },
         "get-tabs": (event) => {
             this.tabs.broadcastTabs();
+        },
+        "get-url": (event) => {
+            this.tabs.emitCurrentURL();
         }
     } as NobuIncomingChannelsHandler;
     public constructor() {
