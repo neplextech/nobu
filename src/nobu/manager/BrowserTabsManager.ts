@@ -1,4 +1,5 @@
 import { BrowserView, WebContents } from "electron";
+import { createContextMenu } from "../menu/ContextMenu";
 import { NobuBrowser } from "../NobuBrowser";
 
 type TabResolvable = number | BrowserView;
@@ -62,6 +63,15 @@ export class BrowserTabsManager {
     private _attachListeners(view: BrowserView) {
         this._channels.forEach(([name, listener]) => {
             view.webContents.on(name as any, listener);
+            view.webContents.on("context-menu", (_, p) => {
+                if (!this.current) return;
+
+                createContextMenu({
+                    view: this.current,
+                    x: p.x,
+                    y: p.y
+                });
+            });
         });
     }
 
