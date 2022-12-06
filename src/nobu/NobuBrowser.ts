@@ -52,7 +52,9 @@ export class NobuBrowser {
                 devTools: this.devMode,
                 preload: `${__dirname}/preload/main.js`
             },
-            show: false
+            show: false,
+            icon: `${__dirname}/../public/nobu.png`,
+            backgroundColor: "#2b2b2b"
         });
 
         this._loadContent();
