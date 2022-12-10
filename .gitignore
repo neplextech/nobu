@@ -3,3 +3,4 @@ app/
 dist/
 builds/
 .DS_Store
+**/.DS_Store
