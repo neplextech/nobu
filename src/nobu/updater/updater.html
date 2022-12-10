@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/; font-src https://fonts.gstatic.com/; img-src *;"
+        />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+        <title>MiniMailer Updater</title>
+        <style>
+            :root {
+                --white: #ffffff;
+                --dark: #18181b;
+                --highlight: #2e6cff;
+                --gray: #99aab5;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            html,
+            body,
+            main {
+                height: 100%;
+                width: 100%;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                font-family: "Poppins", sans-serif;
+                background-color: var(--dark);
+                color: var(--white);
+                text-align: center;
+                -webkit-app-region: drag;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+
+            .hidden {
+                visibility: hidden;
+                display: none;
+            }
+
+            progress {
+                height: 7px;
+                background-color: var(--gray);
+                appearance: none;
+                color: var(--highlight) !important;
+                border-radius: 10px;
+            }
+
+            progress::-webkit-progress-bar {
+                height: 7px;
+                background-color: var(--gray);
+                border-radius: 10px;
+            }
+
+            progress::-moz-progress-bar {
+                height: 7px;
+                -moz-appearance: none;
+                background-color: var(--highlight) !important;
+                border-radius: 10px;
+            }
+
+            progress::-webkit-progress-value {
+                height: 7px;
+                -webkit-appearance: none;
+                background-color: var(--highlight) !important;
+                border-radius: 10px;
+            }
+
+            main > * {
+                max-width: 80%;
+            }
+
+            .highlight {
+                color: var(--highlight);
+            }
+
+            .dim {
+                opacity: 0.6;
+            }
+
+            .dim progress {
+                opacity: 1;
+            }
+
+            .center {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        </style>
+    </head>
+
+    <body>
+        <main>
+            <div class="center dim">
+                <img
+                    src="../../public/nobu.png"
+                    alt=""
+                    height="100px"
+                    width="100px"
+                    draggable="false"
+                    style="border-radius: 50%"
+                />
+            </div>
+            <h1 class="highlight">Nobu</h1>
+            <h3 id="version" class="hidden">Version: 0.0.0</h3>
+            <p id="status" class="dim">Loading...</p>
+        </main>
+    </body>
+</html>

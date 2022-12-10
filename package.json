@@ -4,12 +4,13 @@
   "description": "Nobu web browser",
   "main": "./app/app.js",
   "scripts": {
+    "copy-files": "copyfiles -u 2 ./src/nobu/**/*.html ./app",
     "dev": "run-p dev:*",
-    "dev:electron": "rimraf app && tsc --p tsconfig.node.json && electron .",
+    "dev:electron": "rimraf app && tsc --p tsconfig.node.json && npm run copy-files && electron .",
     "dev:ui": "vite",
     "build": "run-s build:*",
     "build:ui": "vite build --base=./",
-    "build:electron": "rimraf app && tsc --p tsconfig.node.json",
+    "build:electron": "rimraf app && tsc --p tsconfig.node.json && npm run copy-files",
     "deploy": "electron-builder --config=build.js --publish=always",
     "start": "electron .",
     "format": "prettier --write \"./*.{ts,js}\" \"./src/**/*.{js,ts,jsx,tsx,html}\""
@@ -43,6 +44,8 @@
     "vite": "^3.2.4"
   },
   "dependencies": {
+    "copyfiles": "^2.4.1",
+    "electron-updater": "^5.3.0",
     "react-icons": "^4.7.1",
     "undici": "^5.13.0"
   }

@@ -1,15 +1,26 @@
 import { app, BrowserWindow } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
+import { NobuUpdater } from "./updater/NobuUpdater";
 
 let nobu: NobuBrowser;
 
-function bootstrap() {
+async function bootstrap() {
+    let updater = new NobuUpdater();
+    updater.start();
+    const hadUpdate = await updater.check();
+    if (hadUpdate) return updater.stop();
+
     nobu = new NobuBrowser();
 
-    const tab = nobu.tabs.new();
-    tab.webContents.loadURL("https://www.google.com");
-    nobu.create();
-    nobu.tabs.resize(tab);
+    nobu.window.once("ready-to-show", () => {
+        updater.stop();
+        (updater as NobuUpdater | null) = null;
+
+        const tab = nobu.tabs.new();
+        tab.webContents.loadURL("https://www.google.com");
+        nobu.create();
+        nobu.tabs.resize(tab);
+    });
 }
 
 app.whenReady().then(() => {
