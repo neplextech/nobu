@@ -124,12 +124,12 @@ export class BrowserTabsManager {
         return view;
     }
 
-    public attach(tabLike: TabResolvable) {
+    public attach(tabLike: TabResolvable, addAsCurrent = true) {
         const tab = this.resolveTab(tabLike);
         if (tab) {
             this._attachListeners(tab);
             this.nobu.window.addBrowserView(tab);
-            this.current = tab;
+            if (addAsCurrent) this.current = tab;
             // tab.webContents.focus();
         }
     }

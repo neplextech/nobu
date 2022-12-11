@@ -17,9 +17,13 @@ export const NobuBrowserContext = {
 
     off<K extends keyof NobuDispatchChannels>(
         channel: K,
-        listener: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
+        listener?: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
     ) {
-        ipcRenderer.off(channel, listener as any);
+        if (listener) {
+            ipcRenderer.off(channel, listener as any);
+        } else {
+            ipcRenderer.removeAllListeners(channel);
+        }
     },
 
     send<K extends keyof NobuIncomingChannels>(channel: K, ...message: NobuIncomingChannels[K]) {

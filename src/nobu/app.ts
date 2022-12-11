@@ -1,6 +1,8 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, Menu, MenuItem, shell } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
 import { NobuUpdater } from "./updater/NobuUpdater";
+
+const NOBU_GITHUB = "https://github.com/neplextech/nobu" as const;
 
 let nobu: NobuBrowser;
 
@@ -21,6 +23,74 @@ async function bootstrap() {
         nobu.create();
         nobu.tabs.resize(tab);
     });
+
+    Menu.setApplicationMenu(
+        Menu.buildFromTemplate([
+            ...(process.platform === "darwin"
+                ? ([
+                      {
+                          label: app.name,
+                          submenu: [
+                              { role: "about" },
+                              { type: "separator" },
+                              { role: "services" },
+                              { type: "separator" },
+                              { role: "hide" },
+                              { role: "hideOthers" },
+                              { role: "unhide" },
+                              { type: "separator" },
+                              { role: "quit" }
+                          ]
+                      }
+                  ] as Electron.MenuItemConstructorOptions[])
+                : []),
+            {
+                label: "Developer",
+                submenu: [
+                    {
+                        label: "Toggle WebView Mode",
+                        click() {
+                            if (nobu.renderMode === "default") {
+                                if (!nobu.tabs.current) return;
+                                const url = nobu.tabs.getCurrentURL()!;
+                                const screens: WebViewModeConfig[] = Array.from({ length: 2 }, (_, i) => {
+                                    if (i) {
+                                        const bounds = nobu.tabs.current!.getBounds();
+                                        return {
+                                            height: bounds.height,
+                                            width: bounds.width,
+                                            url
+                                        };
+                                    } else {
+                                        return {
+                                            height: 1080,
+                                            width: 720,
+                                            url
+                                        };
+                                    }
+                                });
+
+                                nobu.setRenderMode("webview", screens);
+                            } else {
+                                nobu.setRenderMode("default");
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                label: "About",
+                submenu: [
+                    {
+                        label: "GitHub",
+                        async click() {
+                            await shell.openExternal(NOBU_GITHUB);
+                        }
+                    }
+                ]
+            }
+        ])
+    );
 }
 
 app.whenReady().then(() => {

@@ -1,8 +1,11 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 
+type NobuRenderMode = "default" | "webview";
+
 export class NobuBrowser {
     public window: BrowserWindow;
+    public renderMode: NobuRenderMode = "default";
     public static SPACING_NO_TABS = 80 as const;
     public static SPACING_TABS = 125 as const;
     public SPACING_NO_TABS = NobuBrowser.SPACING_NO_TABS;
@@ -42,6 +45,9 @@ export class NobuBrowser {
         },
         "get-url": (event) => {
             this.tabs.emitCurrentURL();
+        },
+        "set-webview-mode": (event, config) => {
+            this.setRenderMode("webview", config);
         }
     } as NobuIncomingChannelsHandler;
     public constructor() {
@@ -53,6 +59,7 @@ export class NobuBrowser {
                 contextIsolation: true,
                 webSecurity: true,
                 devTools: this.devMode,
+                webviewTag: true,
                 preload: `${__dirname}/preload/main.js`
             },
             show: false,
@@ -104,5 +111,25 @@ export class NobuBrowser {
 
     public send<K extends keyof NobuDispatchChannels>(channel: K, ...args: NobuDispatchChannels[K]) {
         this.window.webContents.send(channel, ...args);
+    }
+
+    public setRenderMode(mode: "webview", config: WebViewModeConfig[]): void;
+    public setRenderMode(mode: "default"): void;
+    public setRenderMode(mode: "webview" | "default", config?: WebViewModeConfig[]): void {
+        if (mode === "webview") {
+            for (const view in this.tabs.views) {
+                const tab = this.tabs.views[view];
+                if (tab) this.tabs.remove(tab);
+            }
+            if (Array.isArray(config) && config.length) this.send("add-webviews", config);
+            this.renderMode = "webview";
+        } else {
+            this.send("remove-webviews");
+            for (const view in this.tabs.views) {
+                const tab = this.tabs.views[view];
+                if (tab) this.tabs.attach(tab, tab.webContents.id === this.tabs.current?.webContents.id);
+            }
+            this.renderMode = "default";
+        }
     }
 }

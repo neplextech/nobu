@@ -2,6 +2,7 @@ import type { IpcMainEvent, IpcRendererEvent } from "electron";
 
 declare global {
     type NobuMainListener<T> = (event: IpcMainEvent, ...args: T) => any;
+
     interface NobuDispatchChannels {
         "set-title": [string];
         "set-url": [string];
@@ -10,6 +11,8 @@ declare global {
         reloading: [];
         reloaded: [];
         "set-tabs": [NobuDispatchedTab[]];
+        "remove-webviews": [];
+        "add-webviews": [WebViewModeConfig[]];
     }
 
     interface NobuDispatchedTab {
@@ -30,20 +33,18 @@ declare global {
         "set-tab": [number];
         "get-tabs": [];
         "get-url": [];
+        "set-webview-mode": [WebViewModeConfig[]];
     }
 
-    interface NobuIncomingChannelsHandler {
-        "history-back": NobuMainListener<NobuIncomingChannels["history-back"]>;
-        "history-forward": NobuMainListener<NobuIncomingChannels["history-forward"]>;
-        "page-reload": NobuMainListener<NobuIncomingChannels["page-reload"]>;
-        "page-reload-cancel": NobuMainListener<NobuIncomingChannels["page-reload-cancel"]>;
-        navigate: NobuMainListener<NobuIncomingChannels["navigate"]>;
-        "new-tab": NobuMainListener<NobuIncomingChannels["new-tab"]>;
-        "close-tab": NobuMainListener<NobuIncomingChannels["close-tab"]>;
-        "set-tab": NobuMainListener<NobuIncomingChannels["set-tab"]>;
-        "get-tabs": NobuMainListener<NobuIncomingChannels["get-tabs"]>;
-        "get-url": NobuMainListener<NobuIncomingChannels["get-url"]>;
+    interface WebViewModeConfig {
+        url: string;
+        height: number;
+        width: number;
     }
+
+    type NobuIncomingChannelsHandler = {
+        [K in keyof NobuIncomingChannels]: NobuMainListener<NobuIncomingChannels[K]>;
+    };
 
     interface HistoryPossibilities {
         back: boolean;
