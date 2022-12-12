@@ -31,18 +31,18 @@ export class AdblockerService extends INobuService {
         const didInitialize = await this._initializeBlocker();
         if (!didInitialize || !this._blocker) return;
         this.addSession(session.defaultSession);
-        this.nobu.getAllTabs().forEach((view) => {
-            this.addSession(view.webContents.session);
-        });
+        // this.nobu.getAllTabs().forEach((view) => {
+        //     this.addSession(view.webContents.session);
+        // });
         this._isEnabled = true;
     }
 
     public disable() {
         if (!this._blocker) return;
         this.removeSession(session.defaultSession);
-        this.nobu.getAllTabs().forEach((view) => {
-            this.removeSession(view.webContents.session);
-        });
+        // this.nobu.getAllTabs().forEach((view) => {
+        //     this.removeSession(view.webContents.session);
+        // });
         this._isEnabled = false;
     }
 

@@ -79,10 +79,10 @@ export class BrowserTabsManager {
     }
 
     private _attachServices(view: Electron.BrowserView) {
-        const adblocker = this.nobu.services.getService<AdblockerService>("adblocker");
-        if (adblocker.isBlockerAvailable()) {
-            adblocker.addSession(view.webContents.session);
-        }
+        // const adblocker = this.nobu.services.getService<AdblockerService>("adblocker");
+        // if (adblocker.isBlockerAvailable()) {
+        //     adblocker.addSession(view.webContents.session);
+        // }
     }
 
     private _removeListeners(view: BrowserView) {
