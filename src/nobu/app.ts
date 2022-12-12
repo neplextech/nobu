@@ -1,10 +1,18 @@
 import { app, BrowserWindow, Menu, MenuItem, shell } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
+import { AdblockerService } from "./services/AdblockerService";
 import { NobuUpdater } from "./updater/NobuUpdater";
 
 const NOBU_GITHUB = "https://github.com/neplextech/nobu" as const;
 
 let nobu: NobuBrowser;
+
+process.on("uncaughtException", (...params) => {
+    if (!app.isPackaged) console.log(...params);
+});
+process.on("unhandledRejection", (...params) => {
+    if (!app.isPackaged) console.log(...params);
+});
 
 async function bootstrap() {
     let updater = new NobuUpdater();
@@ -73,6 +81,20 @@ async function bootstrap() {
                                 nobu.setRenderMode("webview", screens);
                             } else {
                                 nobu.setRenderMode("default");
+                            }
+                        }
+                    },
+                    {
+                        label: "Toggle Adblocker",
+                        async click() {
+                            const service = nobu.services.getService<AdblockerService>("adblocker");
+                            if (!service) return;
+                            if (!service.enabled) {
+                                await service.enable();
+                                nobu.alert("Adblocker is now enabled!");
+                            } else {
+                                await service.disable();
+                                nobu.alert("Adblocker is now disabled!");
                             }
                         }
                     }

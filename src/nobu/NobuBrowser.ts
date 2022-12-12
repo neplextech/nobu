@@ -1,5 +1,7 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
+import { NobuServiceManager } from "./manager/NobuServiceManager";
+import { AdblockerService } from "./services/AdblockerService";
 
 type NobuRenderMode = "default" | "webview";
 
@@ -10,7 +12,9 @@ export class NobuBrowser {
     public static SPACING_TABS = 125 as const;
     public SPACING_NO_TABS = NobuBrowser.SPACING_NO_TABS;
     public SPACING_TABS = NobuBrowser.SPACING_TABS;
+    public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
+    public services = new NobuServiceManager(this);
     public channels = {
         "close-tab": (event, id) => {
             this.tabs.delete(id, true);
@@ -63,12 +67,17 @@ export class NobuBrowser {
                 preload: `${__dirname}/preload/main.js`
             },
             show: false,
-            icon: `file://${__dirname}/../public/nobu.png`,
+            icon: this.ICON_PATH,
             backgroundColor: "#2b2b2b"
         });
 
         this._loadContent();
         this._attachListeners();
+        this._initServices();
+    }
+
+    private async _initServices() {
+        await this.services.register("adblocker", new AdblockerService(this));
     }
 
     private _attachListeners() {
@@ -131,5 +140,17 @@ export class NobuBrowser {
             }
             this.renderMode = "default";
         }
+    }
+
+    public getAllTabs() {
+        return this.tabs.getAllViews();
+    }
+
+    public async alert(message: string) {
+        await dialog.showMessageBox(this.window, {
+            message,
+            buttons: ["Ok"],
+            title: "Nobu"
+        });
     }
 }

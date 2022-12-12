@@ -1,6 +1,7 @@
 import { BrowserView, WebContents } from "electron";
 import { createContextMenu } from "../menu/ContextMenu";
 import { NobuBrowser } from "../NobuBrowser";
+import { AdblockerService } from "../services/AdblockerService";
 
 type TabResolvable = number | BrowserView;
 interface WCEvents {
@@ -77,6 +78,13 @@ export class BrowserTabsManager {
         });
     }
 
+    private _attachServices(view: Electron.BrowserView) {
+        const adblocker = this.nobu.services.getService<AdblockerService>("adblocker");
+        if (adblocker.isBlockerAvailable()) {
+            adblocker.addSession(view.webContents.session);
+        }
+    }
+
     private _removeListeners(view: BrowserView) {
         this._channels.forEach(([name, listener]) => {
             view.webContents.off(name as any, listener);
@@ -120,6 +128,7 @@ export class BrowserTabsManager {
         this.current = view;
         this.resize(view);
         this.attach(this.current);
+        this._attachServices(view);
         if (!disableBroadcast) this.broadcastTabs();
         return view;
     }
@@ -202,5 +211,9 @@ export class BrowserTabsManager {
     public emitCurrentURL() {
         const url = this.getCurrentURL();
         if (url) this.nobu.send("set-url", url);
+    }
+
+    public getAllViews() {
+        return Object.values(this.views);
     }
 }
