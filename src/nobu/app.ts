@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, shell } from "electron";
+import { app, BrowserWindow, Menu, shell, nativeTheme } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
 import { AdblockerService } from "./services/AdblockerService";
 import { NobuUpdater } from "./updater/NobuUpdater";
@@ -96,6 +96,29 @@ async function bootstrap() {
                                 await service.disable();
                                 nobu.alert("Adblocker is now disabled!");
                             }
+                        }
+                    }
+                ]
+            },
+            {
+                label: "Theme",
+                submenu: [
+                    {
+                        label: "Light",
+                        click() {
+                            nativeTheme.themeSource = "light";
+                        }
+                    },
+                    {
+                        label: "Dark",
+                        click() {
+                            nativeTheme.themeSource = "dark";
+                        }
+                    },
+                    {
+                        label: "System",
+                        click() {
+                            nativeTheme.themeSource = "system";
                         }
                     }
                 ]
