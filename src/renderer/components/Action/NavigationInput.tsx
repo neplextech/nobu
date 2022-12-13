@@ -31,7 +31,7 @@ export function NavigationInput() {
         <input
             type="text"
             placeholder="Search or enter web address"
-            className="w-full bg-xdark p-1 px-5 rounded-full focus:outline-1 focus:outline-gray-800"
+            className="w-full dark:bg-xdark bg-xlight p-1 px-5 rounded-full focus:outline dark:focus:outline-gray-500 focus:outline-gray-300"
             onKeyUp={(e) => {
                 if (e.keyCode === 13) {
                     e.preventDefault();

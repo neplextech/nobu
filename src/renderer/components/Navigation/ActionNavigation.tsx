@@ -26,7 +26,7 @@ export function ActionNavigation() {
     return (
         <div className="w-full flex flex-col">
             {!tabs.length ? null : (
-                <div className="mt-2 border-gray-500">
+                <div className="mt-2 dark:border-gray-500 border-gray-200">
                     <div className="mx-3 w-full flex place-items-center">
                         {tabs.map((m, i) => {
                             return (
@@ -41,7 +41,7 @@ export function ActionNavigation() {
                         })}
                         <div className="ml-3 mr-5">
                             <VscAdd
-                                className="h-5 w-5 text-white"
+                                className="h-5 w-5 dark:text-white text-black"
                                 onClick={() => {
                                     Nobu.send("new-tab");
                                 }}
@@ -50,7 +50,7 @@ export function ActionNavigation() {
                     </div>
                 </div>
             )}
-            <div className="flex space-x-5 p-3 text-white place-items-center w-full bg-xdark-0">
+            <div className="flex space-x-5 p-3 dark:text-white text-black place-items-center w-full dark:bg-xdark-0 bg-xlight-0">
                 <NavigationButtons />
                 <div className="w-[70%]">
                     <NavigationInput />

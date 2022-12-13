@@ -44,7 +44,7 @@ export function NavigationButtons() {
     };
 
     return (
-        <div className="flex space-x-4 text-white">
+        <div className="flex space-x-4 dark:text-white text-black">
             <HistoryBack
                 disabled={!historyPs.back}
                 onClick={() => {

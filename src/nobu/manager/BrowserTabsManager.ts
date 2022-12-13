@@ -1,5 +1,5 @@
 import { BrowserView, WebContents } from "electron";
-import { createContextMenu } from "../menu/ContextMenu";
+import { createContextMenu } from "../menu/contextMenu";
 import { NobuBrowser } from "../NobuBrowser";
 import { AdblockerService } from "../services/AdblockerService";
 

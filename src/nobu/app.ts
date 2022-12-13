@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu, MenuItem, shell } from "electron";
+import { app, BrowserWindow, Menu, shell } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
 import { AdblockerService } from "./services/AdblockerService";
 import { NobuUpdater } from "./updater/NobuUpdater";

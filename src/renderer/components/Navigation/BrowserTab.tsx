@@ -30,8 +30,10 @@ export function BrowserTab(props: BrowserTabProps) {
     return (
         <div
             onClick={props.onClick}
-            className={`flex flex-1 max-w-xs items-center justify-between text-white px-3 py-2 rounded-t-md ${
-                props.active ? "bg-xdark-0" : "hover:bg-xdark-0 hover:bg-opacity-70"
+            className={`flex flex-1 max-w-xs items-center justify-between dark:text-white text-black px-3 py-2 rounded-t-md ${
+                props.active
+                    ? "dark:bg-xdark-0 bg-xlight-0"
+                    : "dark:hover:bg-xdark-0 hover:bg-xlight-0 hover:bg-opacity-70"
             }`}
         >
             <div className="flex space-x-3 w-[90%] place-items-center">
@@ -45,7 +47,7 @@ export function BrowserTab(props: BrowserTabProps) {
                 </span>
             </div>
             <VscClose
-                className="h-5 w-5 bg-xdark-0"
+                className="h-5 w-5 dark:bg-xdark-0 bg-xlight-0"
                 onClick={() => {
                     Nobu.send("close-tab", props.id);
                 }}

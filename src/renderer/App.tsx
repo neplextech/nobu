@@ -22,7 +22,9 @@ export default function App() {
     }, []);
 
     return (
-        <div className={`h-screen bg-xdark select-none ${!webviewPages.length ? "overflow-hidden" : ""}`}>
+        <div
+            className={`h-screen dark:bg-xdark bg-xlight select-none ${!webviewPages.length ? "overflow-hidden" : ""}`}
+        >
             <ActionNavigation />
             {!webviewPages.length ? null : (
                 <div className="w-full max-h-full">
