@@ -9,18 +9,20 @@ export function MultiView(props: IProps) {
 
     return (
         <div className="overflow-auto">
-            {pages.map((m, i) => {
-                return (
-                    <WebView
-                        src={m.url}
-                        style={{
-                            width: m.width,
-                            height: m.height
-                        }}
-                        key={i}
-                    ></WebView>
-                );
-            })}
+            <div className="grid grid-flow-row-dense grid-cols-1 lg:grid-cols-3 md:grid-cols-2 gap-2">
+                {pages.map((m, i) => {
+                    return (
+                        <WebView
+                            src={m.url}
+                            style={{
+                                width: m.width,
+                                height: m.height
+                            }}
+                            key={i}
+                        ></WebView>
+                    );
+                })}
+            </div>
         </div>
     );
 }

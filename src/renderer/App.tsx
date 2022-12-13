@@ -22,24 +22,28 @@ export default function App() {
     }, []);
 
     return (
-        <div
-            className={`h-screen dark:bg-xdark bg-xlight select-none ${!webviewPages.length ? "overflow-hidden" : ""}`}
-        >
+        <div className="dark:bg-xdark bg-xlight overflow-hidden">
             <ActionNavigation />
-            {!webviewPages.length ? null : (
-                <div className="w-full max-h-full">
-                    {webviewPages.length === 1 ? (
-                        <WebView
-                            style={{
-                                height: webviewPages[0].height
-                            }}
-                            src={webviewPages[0].url}
-                        />
-                    ) : (
-                        <MultiView pages={webviewPages} />
-                    )}
-                </div>
-            )}
+            <div className={"h-screen select-none bg-inherit overflow-auto"}>
+                {webviewPages.length ? (
+                    <div>
+                        {!webviewPages.length ? null : (
+                            <div className="w-full max-h-full">
+                                {webviewPages.length === 1 ? (
+                                    <WebView
+                                        style={{
+                                            height: webviewPages[0].height
+                                        }}
+                                        src={webviewPages[0].url}
+                                    />
+                                ) : (
+                                    <MultiView pages={webviewPages} />
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }
