@@ -13,6 +13,7 @@ declare global {
         "set-tabs": [NobuDispatchedTab[]];
         "remove-webviews": [];
         "add-webviews": [WebViewModeConfig[]];
+        "set-webview-url": [string];
     }
 
     interface NobuDispatchedTab {
@@ -44,6 +45,7 @@ declare global {
         cw: number;
         name?: string;
         id: number;
+        userAgent?: string;
         type: "tablet" | "mobile";
     }
 

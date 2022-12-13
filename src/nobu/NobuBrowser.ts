@@ -20,15 +20,22 @@ export class NobuBrowser {
             this.tabs.delete(id, true);
         },
         "history-back": (event) => {
-            const can = this.tabs.current?.webContents.canGoBack();
-            if (can) this.tabs.current?.webContents.goBack();
+            const wc = this._getWebContent();
+            const can = wc?.canGoBack();
+            if (can) wc?.goBack();
         },
         "history-forward": (event) => {
-            const can = this.tabs.current?.webContents.canGoForward();
-            if (can) this.tabs.current?.webContents.goForward();
+            const wc = this._getWebContent();
+            const can = wc?.canGoForward();
+            if (can) wc?.goForward();
         },
         navigate: (event, url) => {
-            this.tabs.current?.webContents.loadURL(url);
+            if (this.renderMode === "default") {
+                this.tabs.current?.webContents.loadURL(url);
+            } else {
+                this.send("set-url", url);
+                this.send("set-webview-url", url);
+            }
         },
         "new-tab": (event) => {
             const tab = this.tabs.new();
@@ -36,10 +43,10 @@ export class NobuBrowser {
             this.tabs.resize(tab);
         },
         "page-reload": (event) => {
-            this.tabs.current?.webContents.reload();
+            this._getWebContent()?.reload();
         },
         "page-reload-cancel": (event) => {
-            this.tabs.current?.webContents.stop();
+            this._getWebContent()?.stop();
         },
         "set-tab": (event, id) => {
             this.tabs.setCurrentTab(id);
@@ -74,6 +81,10 @@ export class NobuBrowser {
         this._loadContent();
         this._attachListeners();
         this._initServices();
+    }
+
+    private _getWebContent() {
+        return this.renderMode === "default" ? this.tabs.current?.webContents : this.window.webContents;
     }
 
     private async _initServices() {

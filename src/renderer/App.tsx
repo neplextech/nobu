@@ -22,9 +22,14 @@ export default function App() {
             setWebviewPages([]);
         });
 
+        Nobu.on("set-webview-url", (ev, url) => {
+            setWebviewPages((p) => p.map((m) => ({ ...m, url })));
+        });
+
         return () => {
             Nobu.off("add-webviews");
             Nobu.off("remove-webviews");
+            Nobu.off("set-webview-url");
         };
     }, []);
 

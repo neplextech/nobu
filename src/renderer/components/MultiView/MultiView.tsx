@@ -24,7 +24,8 @@ export function MultiView(props: IProps) {
                                     height: m.ch
                                 }}
                                 key={i}
-                                className="border dark:border-gray-500 border-gray-300"
+                                useragent={m.userAgent || undefined}
+                                className="border dark:border-gray-500 border-gray-300 bg-slate-300"
                             ></WebView>
                         </div>
                     );
