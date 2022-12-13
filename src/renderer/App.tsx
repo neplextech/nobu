@@ -5,6 +5,13 @@ import { ActionNavigation } from "./components/Navigation/ActionNavigation";
 
 export default function App() {
     const [webviewPages, setWebviewPages] = useState<WebViewModeConfig[]>([]);
+    const [mobileViews, setMobileViews] = useState<WebViewModeConfig[]>([]);
+    const [tabletViews, setTabletViews] = useState<WebViewModeConfig[]>([]);
+
+    useEffect(() => {
+        setMobileViews(webviewPages.filter((r) => r.type === "mobile"));
+        setTabletViews(webviewPages.filter((r) => r.type === "tablet"));
+    }, [webviewPages]);
 
     useEffect(() => {
         Nobu.on("add-webviews", (ev, data) => {
@@ -22,23 +29,29 @@ export default function App() {
     }, []);
 
     return (
-        <div className="dark:bg-xdark bg-xlight overflow-hidden">
+        <div className="dark:bg-xdark bg-xlight overflow-hidden flex flex-col space-y-28 max-h-screen">
             <ActionNavigation />
-            <div className={"h-screen select-none bg-inherit overflow-auto"}>
+            <div className={"h-screen select-none bg-inherit overflow-auto px-5"}>
                 {webviewPages.length ? (
-                    <div>
-                        {!webviewPages.length ? null : (
-                            <div className="w-full max-h-full">
-                                {webviewPages.length === 1 ? (
-                                    <WebView
-                                        style={{
-                                            height: webviewPages[0].height
-                                        }}
-                                        src={webviewPages[0].url}
-                                    />
-                                ) : (
-                                    <MultiView pages={webviewPages} />
-                                )}
+                    <div className="w-full dark:text-white light:text-black">
+                        <h1 className="text-3xl text-center">Multi Screen Preview</h1>
+                        {webviewPages.length === 1 ? (
+                            <WebView
+                                style={{
+                                    height: webviewPages[0].height
+                                }}
+                                src={webviewPages[0].url}
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center space-y-5">
+                                <div>
+                                    <h1 className="text-lg">Mobile Screens</h1>
+                                    <MultiView pages={mobileViews} phone />
+                                </div>
+                                <div>
+                                    <h1 className="text-lg">Tablet Screens</h1>
+                                    <MultiView pages={tabletViews} />
+                                </div>
                             </div>
                         )}
                     </div>

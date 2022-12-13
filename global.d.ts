@@ -40,6 +40,11 @@ declare global {
         url: string;
         height: number;
         width: number;
+        ch: number;
+        cw: number;
+        name?: string;
+        id: number;
+        type: "tablet" | "mobile";
     }
 
     type NobuIncomingChannelsHandler = {

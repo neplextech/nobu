@@ -24,7 +24,7 @@ export function ActionNavigation() {
     }, []);
 
     return (
-        <div className="w-full flex flex-col overflow-hidden fixed top-0 left-0 z-50 bg-inherit">
+        <div className="w-full flex flex-col overflow-hidden top-0 left-0 right-0 fixed h-[10%] bg-inherit">
             {!tabs.length ? null : (
                 <div className="mt-2 dark:border-gray-500 border-gray-200">
                     <div className="mx-3 w-full flex place-items-center">

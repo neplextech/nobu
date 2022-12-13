@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, shell, nativeTheme } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
+import { createScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
 import { NobuUpdater } from "./updater/NobuUpdater";
 
@@ -61,22 +62,7 @@ async function bootstrap() {
                             if (nobu.renderMode === "default") {
                                 if (!nobu.tabs.current) return;
                                 const url = nobu.tabs.getCurrentURL()!;
-                                const screens: WebViewModeConfig[] = Array.from({ length: 2 }, (_, i) => {
-                                    if (i) {
-                                        const bounds = nobu.tabs.current!.getBounds();
-                                        return {
-                                            height: bounds.height,
-                                            width: bounds.width,
-                                            url
-                                        };
-                                    } else {
-                                        return {
-                                            height: 1080,
-                                            width: 720,
-                                            url
-                                        };
-                                    }
-                                });
+                                const screens: WebViewModeConfig[] = createScreens(url);
 
                                 nobu.setRenderMode("webview", screens);
                             } else {
