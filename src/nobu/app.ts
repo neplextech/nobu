@@ -9,6 +9,7 @@ let nobu: NobuBrowser;
 process.on("uncaughtException", (...params) => {
     if (isDev) console.log(...params);
 });
+
 process.on("unhandledRejection", (...params) => {
     if (isDev) console.log(...params);
 });

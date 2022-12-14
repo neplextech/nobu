@@ -19,6 +19,15 @@ declare global {
         "zoom-out": [number];
         "trigger-reload": [];
         "cancel-reload": [];
+        "network-offline-emulation": [boolean];
+        "network-error": [NobuSessionNetworkError | null];
+    }
+
+    interface NobuSessionNetworkError {
+        error: string;
+        code: number;
+        url: string;
+        method: string;
     }
 
     interface NobuDispatchedTab {
@@ -43,6 +52,7 @@ declare global {
         "zoom-in": [];
         "zoom-reset": [];
         "zoom-out": [];
+        "network-offline-emulation": [boolean];
     }
 
     interface WebViewModeConfig {

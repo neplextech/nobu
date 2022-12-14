@@ -3,6 +3,7 @@ import { HistoryBack, HistoryForward, HistoryReload, HistoryReloadCancel } from 
 
 interface IProps {
     loading?: boolean;
+    onClick?: () => void;
 }
 
 export function NavigationButtons(props: IProps) {
@@ -46,6 +47,7 @@ export function NavigationButtons(props: IProps) {
             case "history-back":
             case "page-reload-cancel":
             case "history-forward":
+                props.onClick?.();
                 Nobu.send(t);
                 break;
         }

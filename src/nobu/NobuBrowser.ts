@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, session } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
 import { getDefaultScreens } from "./screens/createScreens";
@@ -20,6 +20,7 @@ export class NobuBrowser {
     public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
     public services = new NobuServiceManager(this);
+    public offlineModeEmulation = false;
     public channels = {
         "close-tab": (event, id) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
@@ -50,8 +51,9 @@ export class NobuBrowser {
             this.tabs.resize(tab);
         },
         "page-reload": (event) => {
-            if (this.renderMode === "default") this._getWebContent()?.reload();
-            else this.send("trigger-reload");
+            if (this.renderMode === "default") {
+                this._getWebContent()?.reload();
+            } else this.send("trigger-reload");
         },
         "page-reload-cancel": (event) => {
             if (this.renderMode === "default") this._getWebContent()?.stop();
@@ -77,6 +79,12 @@ export class NobuBrowser {
         },
         "zoom-reset": () => {
             this.handleZoomAction("zoom-reset");
+        },
+        "network-offline-emulation": (_, set) => {
+            const session = this.getDefaultSession();
+            session.enableNetworkEmulation({ offline: !!set });
+            this.offlineModeEmulation = !!set;
+            this.send("network-offline-emulation", !!set);
         }
     } as NobuIncomingChannelsHandler;
 
@@ -115,6 +123,14 @@ export class NobuBrowser {
     private _attachListeners() {
         Object.entries(this.channels).forEach(([name, listener]) => {
             ipcMain.on(name, listener);
+        });
+        const session = this.getDefaultSession();
+        session.webRequest.onBeforeRequest((details, cb) => {
+            if (this.offlineModeEmulation)
+                return cb({
+                    cancel: true
+                });
+            return cb({});
         });
     }
 
@@ -217,5 +233,13 @@ export class NobuBrowser {
         } else {
             this.send("trigger-reload");
         }
+    }
+
+    public getCurrentSession() {
+        return this._getWebContent()?.session || this.getDefaultSession();
+    }
+
+    public getDefaultSession() {
+        return session.defaultSession;
     }
 }

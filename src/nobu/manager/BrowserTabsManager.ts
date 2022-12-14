@@ -16,6 +16,7 @@ interface WCEvents {
 
 export class BrowserTabsManager {
     public tabs: number[] = [];
+    public lastTabId: number | null = null;
     public views: Record<number, BrowserView> = {};
     public current: BrowserView | null = null;
     private _channels = Object.entries({
@@ -163,6 +164,7 @@ export class BrowserTabsManager {
         this.resize(tab);
         this.emitCurrentURL();
         this.broadcastTabs();
+        this.lastTabId = tab.webContents.id;
     }
 
     public delete(tabLike: TabResolvable, exit = false) {

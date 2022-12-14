@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { MultiView } from "./components/MultiView/MultiView";
 import { WebView } from "./components/MultiView/WebView";
 import { ActionNavigation } from "./components/Navigation/ActionNavigation";
+import { ErrorPage } from "./components/pages/ErrorPage";
 import { MultiRender } from "./components/Settings/MultiRender";
 
 export default function App() {
@@ -10,6 +11,7 @@ export default function App() {
     const [tabletViews, setTabletViews] = useState<WebViewModeConfig[]>([]);
     const [showMultiRenderSettingPage, setShowMultiRenderSettingPage] = useState(false);
     const [isContentLoading, setIsContentLoading] = useState(false);
+    const [errorPage, setErrorPage] = useState<NobuSessionNetworkError | null>(null);
 
     useEffect(() => {
         setMobileViews(webviewPages.filter((r) => r.type === "mobile"));
@@ -31,10 +33,15 @@ export default function App() {
             setWebviewPages((p) => p.map((m) => ({ ...m, url })));
         });
 
+        Nobu.on("network-error", (_, data) => {
+            setErrorPage(data);
+        });
+
         return () => {
             Nobu.off("add-webviews");
             Nobu.off("remove-webviews");
             Nobu.off("set-webview-url");
+            Nobu.off("network-error");
         };
     }, []);
 
@@ -55,49 +62,55 @@ export default function App() {
                 }}
             />
             <div className={"h-screen select-none bg-inherit overflow-auto px-5"}>
-                {showMultiRenderSettingPage ? (
-                    <MultiRender />
-                ) : webviewPages.length ? (
-                    <div className="w-full dark:text-white light:text-black">
-                        <h1 className="text-3xl text-center">Multi Screen Preview</h1>
-                        {webviewPages.length === 1 ? (
-                            <WebView
-                                style={{
-                                    height: webviewPages[0].height
-                                }}
-                                src={webviewPages[0].url}
-                            />
-                        ) : (
-                            <div className="flex flex-col items-center justify-center space-y-5">
-                                <div>
-                                    <h1 className="text-lg">Mobile Screens</h1>
-                                    <MultiView
-                                        pages={mobileViews}
-                                        phone
-                                        onStartLoading={() => {
-                                            setIsContentLoading(true);
+                {errorPage ? (
+                    <ErrorPage details={errorPage} />
+                ) : (
+                    <>
+                        {showMultiRenderSettingPage ? (
+                            <MultiRender />
+                        ) : webviewPages.length ? (
+                            <div className="w-full dark:text-white light:text-black">
+                                <h1 className="text-3xl text-center">Multi Screen Preview</h1>
+                                {webviewPages.length === 1 ? (
+                                    <WebView
+                                        style={{
+                                            height: webviewPages[0].height
                                         }}
-                                        onStopLoading={() => {
-                                            setIsContentLoading(false);
-                                        }}
+                                        src={webviewPages[0].url}
                                     />
-                                </div>
-                                <div>
-                                    <h1 className="text-lg">Tablet Screens</h1>
-                                    <MultiView
-                                        pages={tabletViews}
-                                        onStartLoading={() => {
-                                            setIsContentLoading(true);
-                                        }}
-                                        onStopLoading={() => {
-                                            setIsContentLoading(false);
-                                        }}
-                                    />
-                                </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center space-y-5">
+                                        <div>
+                                            <h1 className="text-lg">Mobile Screens</h1>
+                                            <MultiView
+                                                pages={mobileViews}
+                                                phone
+                                                onStartLoading={() => {
+                                                    setIsContentLoading(true);
+                                                }}
+                                                onStopLoading={() => {
+                                                    setIsContentLoading(false);
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <h1 className="text-lg">Tablet Screens</h1>
+                                            <MultiView
+                                                pages={tabletViews}
+                                                onStartLoading={() => {
+                                                    setIsContentLoading(true);
+                                                }}
+                                                onStopLoading={() => {
+                                                    setIsContentLoading(false);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
-                ) : null}
+                        ) : null}
+                    </>
+                )}
             </div>
         </div>
     );
