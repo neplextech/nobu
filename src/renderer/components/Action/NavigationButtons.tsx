@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
 import { HistoryBack, HistoryForward, HistoryReload, HistoryReloadCancel } from "./HistoryAction";
 
-export function NavigationButtons() {
-    const [reloading, setReloading] = useState(false);
+interface IProps {
+    loading?: boolean;
+}
+
+export function NavigationButtons(props: IProps) {
+    const [reloading, setReloading] = useState(props.loading || false);
     const [historyPs, setHistoryPs] = useState<HistoryPossibilities>({
         back: false,
         forward: false
     });
+
+    useEffect(() => {
+        setReloading(props.loading || false);
+    }, [props.loading]);
 
     useEffect(() => {
         const reloadingListener = () => {

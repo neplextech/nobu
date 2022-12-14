@@ -1,6 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
+import { createScreens, getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
 
 type NobuRenderMode = "default" | "webview";
@@ -17,6 +18,7 @@ export class NobuBrowser {
     public services = new NobuServiceManager(this);
     public channels = {
         "close-tab": (event, id) => {
+            if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
             this.tabs.delete(id, true);
         },
         "history-back": (event) => {
@@ -38,18 +40,21 @@ export class NobuBrowser {
             }
         },
         "new-tab": (event) => {
+            if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
             const tab = this.tabs.new();
             tab.webContents.loadURL("https://www.google.com");
             this.tabs.resize(tab);
         },
         "page-reload": (event) => {
-            this._getWebContent()?.reload();
+            if (this.renderMode === "default") this._getWebContent()?.reload();
+            else this.send("trigger-reload");
         },
         "page-reload-cancel": (event) => {
-            this._getWebContent()?.stop();
+            if (this.renderMode === "default") this._getWebContent()?.stop();
+            else this.send("cancel-reload");
         },
         "set-tab": (event, id) => {
-            this.tabs.setCurrentTab(id);
+            if (this.renderMode === "default") this.tabs.setCurrentTab(id);
         },
         "get-tabs": (event) => {
             this.tabs.broadcastTabs();
@@ -59,8 +64,18 @@ export class NobuBrowser {
         },
         "set-webview-mode": (event, config) => {
             this.setRenderMode("webview", config);
+        },
+        "zoom-in": () => {
+            this.handleZoomAction("zoom-in");
+        },
+        "zoom-out": () => {
+            this.handleZoomAction("zoom-out");
+        },
+        "zoom-reset": () => {
+            this.handleZoomAction("zoom-reset");
         }
     } as NobuIncomingChannelsHandler;
+
     public constructor() {
         this.window = new BrowserWindow({
             width: 800,
@@ -81,6 +96,8 @@ export class NobuBrowser {
         this._loadContent();
         this._attachListeners();
         this._initServices();
+
+        if (!app.isPackaged) this.window.webContents.openDevTools({ mode: "detach" });
     }
 
     private _getWebContent() {
@@ -88,7 +105,7 @@ export class NobuBrowser {
     }
 
     private async _initServices() {
-        await this.services.register("adblocker", new AdblockerService(this));
+        await this.services.register("adblocker", new AdblockerService(this), true);
     }
 
     private _attachListeners() {
@@ -133,15 +150,27 @@ export class NobuBrowser {
         this.window.webContents.send(channel, ...args);
     }
 
-    public setRenderMode(mode: "webview", config: WebViewModeConfig[]): void;
+    public setRenderMode(mode: "webview", config: WebViewModeConfig[] | string | boolean): void;
     public setRenderMode(mode: "default"): void;
-    public setRenderMode(mode: "webview" | "default", config?: WebViewModeConfig[]): void {
+    public setRenderMode(mode: "webview" | "default", config?: WebViewModeConfig[] | string | boolean): void {
         if (mode === "webview") {
             for (const view in this.tabs.views) {
                 const tab = this.tabs.views[view];
                 if (tab) this.tabs.remove(tab);
             }
-            if (Array.isArray(config) && config.length) this.send("add-webviews", config);
+            if (Array.isArray(config) && config.length) {
+                this.send("add-webviews", config);
+            } else if (typeof config === "string") {
+                const screens = getDefaultScreens(config, "all");
+                this.send("add-webviews", screens);
+            } else if (typeof config === "boolean") {
+                if (!config) return this.setRenderMode("default");
+                if (this.renderMode === "webview") return this.setRenderMode("default");
+                const url = this.tabs.getCurrentURL();
+                if (!url) return;
+                const screens = getDefaultScreens(url, "all");
+                this.send("add-webviews", screens);
+            }
             this.renderMode = "webview";
         } else {
             this.send("remove-webviews");
@@ -163,5 +192,26 @@ export class NobuBrowser {
             buttons: ["Ok"],
             title: "Nobu"
         });
+    }
+
+    public handleZoomAction(action: "zoom-in" | "zoom-out" | "zoom-reset") {
+        if (this.renderMode === "webview") {
+            this.send(action, Date.now());
+        } else {
+            const current = this.tabs.current;
+            if (current) {
+                const currentLvl = current.webContents.getZoomLevel();
+                const lvl = action === "zoom-in" ? currentLvl + 1 : action === "zoom-out" ? currentLvl - 1 : 0;
+                current.webContents.setZoomLevel(lvl);
+            }
+        }
+    }
+
+    public reloadWindow() {
+        if (this.renderMode === "default") {
+            this.tabs.current?.webContents.reload();
+        } else {
+            this.send("trigger-reload");
+        }
     }
 }

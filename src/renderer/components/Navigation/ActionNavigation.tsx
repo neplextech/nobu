@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import { VscAdd } from "react-icons/vsc";
+import { VscAdd, VscChromeMaximize, VscExtensions, VscZoomIn, VscZoomOut } from "react-icons/vsc";
 import { NavigationButtons } from "../Action/NavigationButtons";
 import { NavigationInput } from "../Action/NavigationInput";
 import { BrowserTab, BrowserTabProps } from "./BrowserTab";
 
-export function ActionNavigation() {
+type ContentType = "multi-render-settings" | "none";
+
+interface IProps {
+    onContentSet: (content: ContentType) => void;
+    loading?: boolean;
+}
+
+export function ActionNavigation(props: IProps) {
     const [tabs, setTabs] = useState<BrowserTabProps[]>([]);
 
     useEffect(() => {
@@ -51,9 +58,44 @@ export function ActionNavigation() {
                 </div>
             )}
             <div className="flex space-x-5 p-3 dark:text-white text-black place-items-center w-full dark:bg-xdark-0 bg-xlight-0">
-                <NavigationButtons />
-                <div className="w-[70%]">
+                <NavigationButtons loading={props.loading} />
+                <div className="w-[60%]">
                     <NavigationInput />
+                </div>
+                <div className="flex space-x-2">
+                    <VscExtensions
+                        className="h-5 w-5 cursor-pointer hover:opacity-70"
+                        title="Toggle Multi Rendering Mode"
+                        onClick={(ev) => {
+                            if (ev.shiftKey) {
+                                ev.preventDefault();
+                                props.onContentSet?.("multi-render-settings");
+                            } else {
+                                Nobu.send("set-webview-mode", true);
+                            }
+                        }}
+                    />
+                    <VscZoomIn
+                        title="Zoom In"
+                        className="h-5 w-5 cursor-pointer hover:opacity-70"
+                        onClick={() => {
+                            Nobu.send("zoom-in");
+                        }}
+                    />
+                    <VscChromeMaximize
+                        title="Reset Zoom"
+                        className="h-5 w-5 cursor-pointer hover:opacity-70"
+                        onClick={() => {
+                            Nobu.send("zoom-reset");
+                        }}
+                    />
+                    <VscZoomOut
+                        title="Zoom Out"
+                        className="h-5 w-5 cursor-pointer hover:opacity-70"
+                        onClick={() => {
+                            Nobu.send("zoom-out");
+                        }}
+                    />
                 </div>
             </div>
         </div>

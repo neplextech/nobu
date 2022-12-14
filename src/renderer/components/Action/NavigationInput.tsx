@@ -35,8 +35,7 @@ export function NavigationInput() {
             onKeyUp={(e) => {
                 if (e.keyCode === 13) {
                     e.preventDefault();
-                    if (!e.currentTarget.value) return;
-                    handleNavigation(e.currentTarget.value);
+                    if (e.currentTarget.value) handleNavigation(e.currentTarget.value);
                 }
             }}
             autoCorrect="false"

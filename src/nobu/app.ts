@@ -1,10 +1,11 @@
 import { app, BrowserWindow, Menu, shell, nativeTheme } from "electron";
 import { NobuBrowser } from "./NobuBrowser";
-import { createScreens } from "./screens/createScreens";
+import { createScreens, getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
 import { NobuUpdater } from "./updater/NobuUpdater";
 
 const NOBU_GITHUB = "https://github.com/neplextech/nobu" as const;
+const isMac = process.platform === "darwin";
 
 let nobu: NobuBrowser;
 
@@ -35,7 +36,7 @@ async function bootstrap() {
 
     Menu.setApplicationMenu(
         Menu.buildFromTemplate([
-            ...(process.platform === "darwin"
+            ...(isMac
                 ? ([
                       {
                           label: app.name,
@@ -54,21 +55,49 @@ async function bootstrap() {
                   ] as Electron.MenuItemConstructorOptions[])
                 : []),
             {
+                label: "Edit",
+                submenu: [
+                    { role: "undo" },
+                    { role: "redo" },
+                    { type: "separator" },
+                    { role: "cut" },
+                    { role: "copy" },
+                    { role: "paste" },
+                    ...(isMac
+                        ? ([
+                              { role: "pasteAndMatchStyle" },
+                              { role: "delete" },
+                              { role: "selectAll" },
+                              { type: "separator" },
+                              {
+                                  label: "Speech",
+                                  submenu: [{ role: "startSpeaking" }, { role: "stopSpeaking" }]
+                              }
+                          ] as Electron.MenuItemConstructorOptions[])
+                        : ([
+                              { role: "delete" },
+                              { type: "separator" },
+                              { role: "selectAll" }
+                          ] as Electron.MenuItemConstructorOptions[]))
+                ]
+            },
+            {
                 label: "Developer",
                 submenu: [
                     {
-                        label: "Toggle WebView Mode",
+                        label: "Toggle Multi-View Mode",
                         click() {
                             if (nobu.renderMode === "default") {
                                 if (!nobu.tabs.current) return;
                                 const url = nobu.tabs.getCurrentURL()!;
-                                const screens: WebViewModeConfig[] = createScreens(url);
+                                const screens: WebViewModeConfig[] = getDefaultScreens(url);
 
                                 nobu.setRenderMode("webview", screens);
                             } else {
                                 nobu.setRenderMode("default");
                             }
-                        }
+                        },
+                        accelerator: "CommandOrControl+Shift+`"
                     },
                     {
                         label: "Toggle Adblocker",
@@ -82,12 +111,13 @@ async function bootstrap() {
                                 await service.disable();
                                 nobu.alert("Adblocker is now disabled!");
                             }
-                        }
+                        },
+                        accelerator: "CommandOrControl+`"
                     }
                 ]
             },
             {
-                label: "Theme",
+                label: "Themes",
                 submenu: [
                     {
                         label: "Light",
@@ -106,6 +136,39 @@ async function bootstrap() {
                         click() {
                             nativeTheme.themeSource = "system";
                         }
+                    }
+                ]
+            },
+            {
+                label: "Window",
+                submenu: [
+                    {
+                        label: "Reload Window",
+                        click() {
+                            nobu.reloadWindow();
+                        },
+                        accelerator: "CommandOrControl+R"
+                    },
+                    {
+                        label: "Zoom In",
+                        click() {
+                            nobu.handleZoomAction("zoom-in");
+                        },
+                        accelerator: "CommandOrControl+numadd"
+                    },
+                    {
+                        label: "Zoom Out",
+                        click() {
+                            nobu.handleZoomAction("zoom-out");
+                        },
+                        accelerator: "CommandOrControl+numsub"
+                    },
+                    {
+                        label: "Reset Zoom",
+                        click() {
+                            nobu.handleZoomAction("zoom-reset");
+                        },
+                        accelerator: "CommandOrControl+num0"
                     }
                 ]
             },

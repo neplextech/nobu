@@ -137,7 +137,9 @@ export class BrowserTabsManager {
         const tab = this.resolveTab(tabLike);
         if (tab) {
             this._attachListeners(tab);
-            this.nobu.window.addBrowserView(tab);
+            try {
+                this.nobu.window.addBrowserView(tab);
+            } catch {}
             if (addAsCurrent) this.current = tab;
             // tab.webContents.focus();
         }
@@ -147,7 +149,9 @@ export class BrowserTabsManager {
         const tab = this.resolveTab(tabLike);
         if (tab) {
             this._removeListeners(tab);
-            this.nobu.window.removeBrowserView(tab);
+            try {
+                this.nobu.window.removeBrowserView(tab);
+            } catch {}
             // this.current = null;
         }
     }

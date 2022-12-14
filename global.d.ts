@@ -14,6 +14,11 @@ declare global {
         "remove-webviews": [];
         "add-webviews": [WebViewModeConfig[]];
         "set-webview-url": [string];
+        "zoom-in": [number];
+        "zoom-reset": [number];
+        "zoom-out": [number];
+        "trigger-reload": [];
+        "cancel-reload": [];
     }
 
     interface NobuDispatchedTab {
@@ -34,7 +39,10 @@ declare global {
         "set-tab": [number];
         "get-tabs": [];
         "get-url": [];
-        "set-webview-mode": [WebViewModeConfig[]];
+        "set-webview-mode": [WebViewModeConfig[] | string | boolean];
+        "zoom-in": [];
+        "zoom-reset": [];
+        "zoom-out": [];
     }
 
     interface WebViewModeConfig {

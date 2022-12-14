@@ -1,3 +1,5 @@
+import React, { useEffect } from "react";
+
 export const WEBVIEW_EVENTS = [
     "load-commit",
     "did-finish-load",
@@ -151,21 +153,54 @@ type WebViewTagProps = IWebviewTag & React.HTMLAttributes<Electron.WebviewTag>;
 export type WebViewTagElement = IWebviewTag & HTMLWebViewElement;
 
 function transformCase(s: string): string {
-    const result = s.replace("on", "").replace(/([A-Z])/g, " $1");
+    const result = s
+        .replace("on", "")
+        .replace(/([A-Z])/g, " $1")
+        .trim();
     return result.split(" ").join("-").toLowerCase().trim();
 }
 
-export function WebView(props: Partial<WebViewTagProps>) {
-    Object.keys(props).forEach((prop) => {
-        if (!prop.startsWith("on")) return;
-        const propVal = prop as keyof typeof props;
-        const native = transformCase(propVal);
-        if (WEBVIEW_EVENTS.some((r) => r === native)) {
-            const value = props[propVal];
-            delete props[propVal];
-            props[native as typeof propVal] = value;
-        }
-    });
+export const WebView = React.forwardRef(
+    (props: Partial<WebViewTagProps>, ref: React.ForwardedRef<HTMLWebViewElement>) => {
+        const id = `$$__webview-${Date.now()}__$$`;
+        const events: { name: string; handler: Function }[] = [];
 
-    return <webview {...props} />;
-}
+        const newProp: typeof props = Object.assign({}, props);
+        Object.keys(props).forEach((prop) => {
+            if (!prop.startsWith("on")) return;
+            const propVal = prop as keyof typeof props;
+            const native = transformCase(propVal);
+            if (WEBVIEW_EVENTS.some((r) => r === native)) {
+                const value = props[propVal];
+                delete newProp[propVal];
+                events.push({
+                    name: native,
+                    handler: value
+                });
+            }
+        });
+
+        Object.preventExtensions(newProp);
+
+        useEffect(() => {
+            const el = document.getElementById(id);
+            if (el) {
+                events.forEach((ev) => {
+                    // @ts-expect-error
+                    el.addEventListener(ev.name, ev.handler);
+                });
+            }
+
+            return () => {
+                if (el) {
+                    events.forEach((ev) => {
+                        // @ts-expect-error
+                        el.removeEventListener(ev.name, ev.handler);
+                    });
+                }
+            };
+        }, []);
+
+        return <webview id={id} ref={ref} {...newProp} />;
+    }
+);
