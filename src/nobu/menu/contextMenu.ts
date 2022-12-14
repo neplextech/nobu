@@ -1,5 +1,6 @@
 import { BrowserView, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
 import { NobuBrowser } from "../NobuBrowser";
+import { commandAccelerators } from "../utils/accelerators";
 
 interface ctxMenuProps extends Electron.ContextMenuParams {
     view: BrowserView;
@@ -35,6 +36,7 @@ export function createContextMenu(props: ctxMenuProps) {
         },
         {
             label: "Refresh",
+            accelerator: commandAccelerators.MenuDefault.reloadWindow,
             click() {
                 view.webContents.reload();
             }
@@ -42,8 +44,13 @@ export function createContextMenu(props: ctxMenuProps) {
         { type: "separator" },
         {
             label: "Inspect",
+            accelerator: commandAccelerators.BrowserViewContext.inspect,
             click() {
-                view.webContents.toggleDevTools();
+                try {
+                    view.webContents.inspectElement(x, y);
+                } catch {
+                    if (!view.webContents.isDevToolsOpened()) view.webContents.openDevTools();
+                }
             }
         }
     ];

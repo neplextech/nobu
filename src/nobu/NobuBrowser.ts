@@ -1,12 +1,16 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
-import { createScreens, getDefaultScreens } from "./screens/createScreens";
+import { getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
+import { isDev } from "./utils/isDev";
 
 type NobuRenderMode = "default" | "webview";
 
 export class NobuBrowser {
+    public app = app;
+    public theme = nativeTheme;
+    public shell = shell;
     public window: BrowserWindow;
     public renderMode: NobuRenderMode = "default";
     public static SPACING_NO_TABS = 80 as const;
@@ -97,7 +101,7 @@ export class NobuBrowser {
         this._attachListeners();
         this._initServices();
 
-        if (!app.isPackaged) this.window.webContents.openDevTools({ mode: "detach" });
+        if (isDev) this.window.webContents.openDevTools({ mode: "detach" });
     }
 
     private _getWebContent() {
@@ -121,7 +125,7 @@ export class NobuBrowser {
     }
 
     public get devMode() {
-        return !app.isPackaged;
+        return isDev;
     }
 
     private _loadContent() {

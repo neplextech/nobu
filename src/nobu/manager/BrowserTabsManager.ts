@@ -1,7 +1,6 @@
-import { BrowserView, WebContents } from "electron";
+import { BrowserView } from "electron";
 import { createContextMenu } from "../menu/contextMenu";
 import { NobuBrowser } from "../NobuBrowser";
-import { AdblockerService } from "../services/AdblockerService";
 
 type TabResolvable = number | BrowserView;
 interface WCEvents {
