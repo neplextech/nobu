@@ -1,24 +1,18 @@
 import { ipcRenderer } from "electron";
 
-const getVersionTag = () => {
-    try {
-        return require(`${__dirname}/../../package.json`).version;
-    } catch {
-        return "0.0.0";
-    }
-};
-
 document.addEventListener("DOMContentLoaded", () => {
     const versionTag = document.getElementById("version");
-    if (versionTag) {
-        versionTag.innerText = getVersionTag();
-        versionTag.classList.remove("hidden");
-    }
-
     const state = document.getElementById("status");
 
     ipcRenderer.on("checking-for-update", (e) => {
         if (state) state.innerHTML = "Checking for updates...";
+    });
+
+    ipcRenderer.on("current-version", (e, v: string) => {
+        if (versionTag && v) {
+            versionTag.innerText = v;
+            versionTag.classList.remove("hidden");
+        }
     });
 
     ipcRenderer.on("new-update", (e, version) => {

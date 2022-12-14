@@ -25,6 +25,18 @@ export class NobuUpdater {
         });
 
         this.window.loadFile(`${__dirname}/updater.html`);
+
+        this.window.once("ready-to-show", () => {
+            this.window?.webContents.send("current-version", this.__getCurrentVersion());
+        });
+    }
+
+    private __getCurrentVersion() {
+        try {
+            return require(`${__dirname}/../../package.json`).version as string;
+        } catch {
+            return null;
+        }
     }
 
     public check() {
