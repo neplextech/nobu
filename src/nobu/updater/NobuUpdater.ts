@@ -8,6 +8,7 @@ export class NobuUpdater {
         this.updater.allowDowngrade = false;
         this.updater.autoDownload = false;
         this.updater.autoInstallOnAppQuit = true;
+        // this.updater.forceDevUpdateConfig = true;
     }
 
     public start() {
@@ -42,16 +43,13 @@ export class NobuUpdater {
     public check() {
         if (!app.isPackaged) return Promise.resolve(false);
         return new Promise<boolean>(async (resolve) => {
-            const updateInfo = await this.updater.checkForUpdates().catch(() => null);
-            if (!updateInfo) return resolve(false);
-
             this.updater.on("update-not-available", () => {
                 resolve(false);
             });
 
             this.updater.on("update-available", (info) => {
                 this.window?.webContents.send("new-update", info.version);
-                this.updater.downloadUpdate();
+                this.updater.downloadUpdate().catch(() => resolve(false));
             });
 
             this.updater.on("checking-for-update", () => {
@@ -82,6 +80,9 @@ export class NobuUpdater {
                 this.window?.webContents.send("error", `Error updating app:\n\n${err}`);
                 resolve(false);
             });
+
+            const updateInfo = await this.updater.checkForUpdates().catch(() => null);
+            if (!updateInfo) return resolve(false);
         });
     }
 
