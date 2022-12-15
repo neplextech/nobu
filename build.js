@@ -29,5 +29,9 @@ module.exports = {
         target: "dmg",
         category: "public.app-category.developer-tools"
     },
-    generateUpdatesFilesForAllChannels: true
+    generateUpdatesFilesForAllChannels: true,
+    protocols: {
+        name: "Nobu Protocols",
+        schemes: ["nobu"]
+    }
 };

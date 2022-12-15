@@ -53,6 +53,7 @@ declare global {
         "zoom-reset": [];
         "zoom-out": [];
         "network-offline-emulation": [boolean];
+        "open-multiview-settings": [];
     }
 
     interface WebViewModeConfig {

@@ -120,8 +120,7 @@ export class BrowserTabsManager {
     }
 
     public new(disableBroadcast = false) {
-        const view = new BrowserView();
-        view.setAutoResize({ width: true, height: true });
+        const view = this.createBrowserView();
         this.tabs.push(view.webContents.id);
         this.views[view.webContents.id] = view;
         if (this.current) this.remove(this.current);
@@ -130,6 +129,14 @@ export class BrowserTabsManager {
         this.attach(this.current);
         this._attachServices(view);
         if (!disableBroadcast) this.broadcastTabs();
+        return view;
+    }
+
+    public createBrowserView() {
+        const view = new BrowserView();
+        view.setAutoResize({ width: true, height: true });
+        this.resize(view);
+
         return view;
     }
 

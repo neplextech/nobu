@@ -90,7 +90,7 @@ export function ActionNavigation(props: IProps) {
                         onClick={(ev) => {
                             if (ev.shiftKey) {
                                 ev.preventDefault();
-                                props.onContentSet?.("multi-render-settings");
+                                Nobu.send("open-multiview-settings");
                             } else {
                                 Nobu.send("set-webview-mode", true);
                             }

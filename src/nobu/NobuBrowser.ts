@@ -3,6 +3,7 @@ import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
 import { getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
+import { ProtocolServices } from "./services/ProtocolServices";
 import { isDev } from "./utils/isDev";
 
 type NobuRenderMode = "default" | "webview";
@@ -85,6 +86,10 @@ export class NobuBrowser {
             session.enableNetworkEmulation({ offline: !!set });
             this.offlineModeEmulation = !!set;
             this.send("network-offline-emulation", !!set);
+        },
+        "open-multiview-settings": () => {
+            // TODO
+            // this.tabs.openInNewTab("nobu-settings://multiview");
         }
     } as NobuIncomingChannelsHandler;
 
@@ -118,6 +123,7 @@ export class NobuBrowser {
 
     private async _initServices() {
         await this.services.register("adblocker", new AdblockerService(this), true);
+        await this.services.register("protocol", new ProtocolServices(this), true);
     }
 
     private _attachListeners() {
@@ -145,11 +151,22 @@ export class NobuBrowser {
     }
 
     private _loadContent() {
-        if (this.devMode) {
-            this.window.loadURL("http://localhost:3000");
-        } else {
-            this.window.loadFile(`${__dirname}/../dist/index.html`);
-        }
+        const src = this.source;
+        if (src.type === "path") return void this.window.loadFile(src.value);
+        this.window.loadURL(src.value);
+    }
+
+    public get source() {
+        if (this.devMode)
+            return {
+                value: "http://localhost:3000",
+                type: "url"
+            } as const;
+
+        return {
+            value: `${__dirname}/../dist/index.html`,
+            type: "path"
+        } as const;
     }
 
     public create() {
