@@ -3,16 +3,21 @@ import type { IpcMainEvent, IpcRendererEvent } from "electron";
 declare global {
     type NobuMainListener<T> = (event: IpcMainEvent, ...args: T) => any;
 
+    interface INobuURLSetPayload {
+        tab: number;
+        url: string;
+    }
+
     interface NobuDispatchChannels {
         "set-title": [string];
-        "set-url": [string];
+        "set-url": [INobuURLSetPayload];
         "set-history": [HistoryPossibilities];
         "set-favicon": [string];
         reloading: [];
         reloaded: [];
         "set-tabs": [NobuDispatchedTab[]];
         "remove-webviews": [];
-        "add-webviews": [WebViewModeConfig[]];
+        "add-webviews": [NobuSplitView[]];
         "set-webview-url": [string];
         "zoom-in": [number];
         "zoom-reset": [number];
@@ -21,6 +26,7 @@ declare global {
         "cancel-reload": [];
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
+        "split-view": [NobuSplitView[] | null];
     }
 
     interface NobuSessionNetworkError {
@@ -35,6 +41,12 @@ declare global {
         active: boolean;
         title: string;
         loading: boolean;
+        url: string;
+    }
+
+    interface NobuNavigationAddress {
+        address: string;
+        tab: number;
     }
 
     interface NobuIncomingChannels {
@@ -42,13 +54,13 @@ declare global {
         "history-forward": [];
         "page-reload": [];
         "page-reload-cancel": [];
-        navigate: [string];
+        navigate: [NobuNavigationAddress];
         "new-tab": [];
         "close-tab": [number];
         "set-tab": [number];
         "get-tabs": [];
         "get-url": [];
-        "set-webview-mode": [WebViewModeConfig[] | string | boolean];
+        "set-splitview-mode": [NobuSplitView[] | null | boolean];
         "zoom-in": [];
         "zoom-reset": [];
         "zoom-out": [];
@@ -56,7 +68,7 @@ declare global {
         "open-multiview-settings": [];
     }
 
-    interface WebViewModeConfig {
+    interface NobuSplitView {
         url: string;
         height: number;
         width: number;

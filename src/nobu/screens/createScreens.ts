@@ -1,4 +1,4 @@
-type GenericScreen = Omit<WebViewModeConfig, "url"> & { default?: boolean };
+type GenericScreen = Omit<NobuSplitView, "url"> & { default?: boolean };
 type ScreenType = "mobile" | "tablet" | "all";
 type FilterFn = (screen: GenericScreen) => boolean;
 
@@ -1037,7 +1037,7 @@ export const TabletScreens: GenericScreen[] = [
     }
 ];
 
-export function createScreens(url: string, type: ScreenType = "all", filter?: FilterFn): WebViewModeConfig[] {
+export function createScreens(url: string, type: ScreenType = "all", filter?: FilterFn): NobuSplitView[] {
     if (type === "all") {
         let screens = ([] as GenericScreen[]).concat(MobileScreens, TabletScreens);
         if (filter) screens = screens.filter(filter);
@@ -1055,6 +1055,6 @@ export function createScreens(url: string, type: ScreenType = "all", filter?: Fi
     }));
 }
 
-export function getDefaultScreens(url: string, type: ScreenType = "all"): WebViewModeConfig[] {
+export function getDefaultScreens(url: string, type: ScreenType = "all"): NobuSplitView[] {
     return createScreens(url, type, (s) => !!s.default);
 }

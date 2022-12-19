@@ -47,7 +47,7 @@ export class BrowserTabsManager {
             this.broadcastTabs();
         },
         "will-navigate": (event, url) => {
-            this.nobu.send("set-url", url);
+            // this.nobu.send("set-url", url);
             this.broadcastTabs();
         },
         "page-favicon-updated": (event, icons) => {
@@ -221,8 +221,8 @@ export class BrowserTabsManager {
     }
 
     public emitCurrentURL() {
-        const url = this.getCurrentURL();
-        if (url) this.nobu.send("set-url", url);
+        // const url = this.getCurrentURL();
+        // if (url) this.nobu.send("set-url", url);
     }
 
     public getAllViews() {

@@ -64,7 +64,7 @@ export function createApplicationMenu(nobu: NobuBrowser) {
                         if (nobu.renderMode === "default") {
                             if (!nobu.tabs.current) return;
                             const url = nobu.tabs.getCurrentURL()!;
-                            const screens: WebViewModeConfig[] = getDefaultScreens(url);
+                            const screens: NobuSplitView[] = getDefaultScreens(url);
 
                             nobu.setRenderMode("webview", screens);
                         } else {

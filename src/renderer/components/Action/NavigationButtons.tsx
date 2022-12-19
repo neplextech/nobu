@@ -3,43 +3,22 @@ import { HistoryBack, HistoryForward, HistoryReload, HistoryReloadCancel } from 
 
 interface IProps {
     loading?: boolean;
+    forward?: boolean;
+    backward?: boolean;
     onClick?: () => void;
 }
 
 export function NavigationButtons(props: IProps) {
     const [reloading, setReloading] = useState(props.loading || false);
     const [historyPs, setHistoryPs] = useState<HistoryPossibilities>({
-        back: false,
-        forward: false
+        back: props.backward || false,
+        forward: props.forward || false
     });
 
     useEffect(() => {
         setReloading(props.loading || false);
-    }, [props.loading]);
-
-    useEffect(() => {
-        const reloadingListener = () => {
-            setReloading(true);
-        };
-
-        const reloadedListener = () => {
-            setReloading(false);
-        };
-
-        const historyListener = (ev: any, p: HistoryPossibilities) => {
-            setHistoryPs(p);
-        };
-
-        Nobu.on("reloading", reloadingListener);
-        Nobu.on("reloaded", reloadedListener);
-        Nobu.on("set-history", historyListener);
-
-        return () => {
-            Nobu.off("reloading", reloadingListener);
-            Nobu.off("reloaded", reloadedListener);
-            Nobu.on("set-history", historyListener);
-        };
-    }, []);
+        setHistoryPs({ back: !!props.backward, forward: !!props.forward });
+    }, [props.loading, props.forward, props.backward]);
 
     const handleActions = (t: keyof NobuIncomingChannels) => {
         switch (t) {

@@ -38,12 +38,12 @@ export class NobuBrowser {
             if (can) wc?.goForward();
         },
         navigate: (event, url) => {
-            if (this.renderMode === "default") {
-                this.tabs.current?.webContents.loadURL(url);
-            } else {
-                this.send("set-url", url);
-                this.send("set-webview-url", url);
-            }
+            // if (this.renderMode === "default") {
+            //     this.tabs.current?.webContents.loadURL(url);
+            // } else {
+            //     this.send("set-url", url);
+            //     this.send("set-webview-url", url);
+            // }
         },
         "new-tab": (event) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
@@ -69,9 +69,6 @@ export class NobuBrowser {
         "get-url": (event) => {
             this.tabs.emitCurrentURL();
         },
-        "set-webview-mode": (event, config) => {
-            this.setRenderMode("webview", config);
-        },
         "zoom-in": () => {
             this.handleZoomAction("zoom-in");
         },
@@ -90,7 +87,8 @@ export class NobuBrowser {
         "open-multiview-settings": () => {
             // TODO
             // this.tabs.openInNewTab("nobu-settings://multiview");
-        }
+        },
+        "set-splitview-mode": () => {}
     } as NobuIncomingChannelsHandler;
 
     public constructor() {
@@ -187,9 +185,9 @@ export class NobuBrowser {
         this.window.webContents.send(channel, ...args);
     }
 
-    public setRenderMode(mode: "webview", config: WebViewModeConfig[] | string | boolean): void;
+    public setRenderMode(mode: "webview", config: NobuSplitView[] | string | boolean): void;
     public setRenderMode(mode: "default"): void;
-    public setRenderMode(mode: "webview" | "default", config?: WebViewModeConfig[] | string | boolean): void {
+    public setRenderMode(mode: "webview" | "default", config?: NobuSplitView[] | string | boolean): void {
         if (mode === "webview") {
             for (const view in this.tabs.views) {
                 const tab = this.tabs.views[view];

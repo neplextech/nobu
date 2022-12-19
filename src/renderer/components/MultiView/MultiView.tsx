@@ -3,7 +3,7 @@ import { VscChromeMaximize, VscInspect, VscLoading, VscZoomIn, VscZoomOut } from
 import { WebView, WebViewTagElement } from "./WebView";
 
 interface IProps {
-    pages: WebViewModeConfig[];
+    pages: NobuSplitView[];
     phone?: boolean;
     onStartLoading?: () => void;
     onStopLoading?: () => void;
@@ -26,7 +26,7 @@ export function MultiView(props: IProps) {
 }
 
 interface InternalProps {
-    data: WebViewModeConfig;
+    data: NobuSplitView;
     onStartLoading?: () => void;
     onStopLoading?: () => void;
 }
