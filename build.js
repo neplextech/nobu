@@ -10,7 +10,7 @@ module.exports = {
         output: "builds/app"
     },
     extraMetadata: {
-        main: "app/app.js"
+        main: "app/index.js"
     },
     icon: `${__dirname}/public/nobu.png`,
     publish: ["github"],

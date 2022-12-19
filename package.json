@@ -2,7 +2,7 @@
   "name": "Nobu",
   "version": "0.1.4",
   "description": "Nobu web browser",
-  "main": "./app/app.js",
+  "main": "./app/index.js",
   "scripts": {
     "copy-files": "copyfiles -u 2 ./src/nobu/**/*.html ./app",
     "dev": "run-p dev:*",
