@@ -3,25 +3,15 @@ import { BrowserTab } from "../Tabs/BrowserTab";
 import { NavigationButtons } from "../Action/NavigationButtons";
 import { AddressBar } from "../Action/AddressBar";
 import { formatAddress } from "../../utils/formatAddress";
+import { useTab } from "../../hooks/useTab";
 
-interface IProps {
-    tabs: NobuDispatchedTab[];
-    current: NobuDispatchedTab | null;
-}
-
-export function ActionBar(props: IProps) {
-    const { current: __currentTab, tabs } = props;
-
+export function ActionBar() {
+    const { current, tabs } = useTab();
     if (!tabs.length) return <></>;
-
-    const currentTab = __currentTab || tabs[0];
 
     const handleAddressSubmit = (address: string) => {
         if (address) {
-            Nobu.send("navigate", {
-                address: formatAddress(address),
-                tab: currentTab.id
-            });
+            Nobu.send("navigate", current.id, formatAddress(address));
         }
     };
 
@@ -29,7 +19,7 @@ export function ActionBar(props: IProps) {
         <div className="w-full flex flex-col overflow-hidden top-0 left-0 right-0 fixed h-auto max-h-28 bg-inherit">
             {!tabs.length ? null : (
                 <div className="mt-2 dark:border-gray-500 border-gray-200">
-                    <div className="mx-3 w-full flex place-items-center">
+                    <div className="mx-4 w-full flex place-items-center">
                         {tabs.map((m, i) => {
                             return (
                                 <BrowserTab
@@ -54,13 +44,13 @@ export function ActionBar(props: IProps) {
             )}
             <div className="flex space-x-5 p-3 dark:text-white text-black place-items-center w-full dark:bg-xdark-0 bg-xlight-0">
                 <NavigationButtons
-                    loading={currentTab.loading}
+                    loading={current.loading}
                     onClick={() => {
-                        if (currentTab) Nobu.send("set-tab", currentTab.id);
+                        if (current) Nobu.send("set-tab", current.id);
                     }}
                 />
                 <div className="w-[60%]">
-                    <AddressBar address={currentTab.url} onSubmit={handleAddressSubmit} />
+                    <AddressBar current={current} onSubmit={handleAddressSubmit} />
                 </div>
                 <div className="flex space-x-2">
                     <VscExtensions
@@ -71,7 +61,7 @@ export function ActionBar(props: IProps) {
                                 ev.preventDefault();
                                 Nobu.send("open-multiview-settings");
                             } else {
-                                Nobu.send("set-splitview-mode", true);
+                                Nobu.send("set-splitview-mode", current.id, true);
                             }
                         }}
                     />

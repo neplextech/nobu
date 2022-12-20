@@ -1,17 +1,26 @@
 import { useEffect, useState } from "react";
+import { receiver } from "../../utils/nobu";
 
 interface IProps {
-    address?: string;
+    current: NobuDispatchedTab;
     onSubmit: (address: string) => void;
 }
 
 export function AddressBar(props: IProps) {
-    const { address, onSubmit } = props;
-    const [currentAddress, setCurrentAddress] = useState(address || "");
+    const { onSubmit, current } = props;
+    const [currentAddress, setCurrentAddress] = useState(current.url || "");
 
     useEffect(() => {
-        setCurrentAddress(address || "");
-    }, [address]);
+        setCurrentAddress(current.url || "");
+    }, [current.url]);
+
+    useEffect(() => {
+        const addrL = receiver("set-url", (_, id, url) => {
+            if (id === current.id) setCurrentAddress(url || "");
+        });
+
+        return () => addrL.destroy();
+    }, []);
 
     return (
         <input

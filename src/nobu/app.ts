@@ -45,9 +45,9 @@ async function bootstrap() {
         }
 
         const tab = nobu.tabs.new();
-        tab.webContents.loadURL("https://www.google.com");
+        tab.webContents!.loadURL("https://www.google.com");
         nobu.create();
-        nobu.tabs.resize(tab);
+        tab.resize();
     });
 
     Menu.setApplicationMenu(createApplicationMenu(nobu));

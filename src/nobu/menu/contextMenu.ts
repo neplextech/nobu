@@ -1,6 +1,7 @@
 import { BrowserView, BrowserWindow, Menu, MenuItemConstructorOptions } from "electron";
 import { NobuBrowser } from "../NobuBrowser";
 import { commandAccelerators } from "../utils/accelerators";
+import { getDefaultScreens } from "../screens/createScreens";
 
 interface ctxMenuProps extends Electron.ContextMenuParams {
     view: BrowserView;
@@ -42,6 +43,22 @@ export function createContextMenu(props: ctxMenuProps) {
             }
         },
         { type: "separator" },
+        {
+            label: "Toggle Multi-View Mode",
+            click() {
+                if (nobu.renderMode === "default") {
+                    if (!nobu.tabs.current) return;
+                    const url = nobu.tabs.current?.getCurrentURL();
+                    if (!url) return;
+                    const screens: NobuSplitView[] = getDefaultScreens(url);
+
+                    nobu.setRenderMode("webview", screens);
+                } else {
+                    nobu.setRenderMode("default");
+                }
+            },
+            accelerator: commandAccelerators.MenuDefault.toggleMultiView
+        },
         {
             label: "Inspect",
             accelerator: commandAccelerators.BrowserViewContext.inspect,

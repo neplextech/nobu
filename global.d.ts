@@ -21,7 +21,7 @@ declare global {
         "cancel-reload": [string];
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
-        "split-view": [string, NobuSplitView[] | null];
+        "split-view": [string, NobuSplitView[]];
     }
 
     interface NobuSessionNetworkError {
@@ -79,7 +79,7 @@ declare global {
         forward: boolean;
     }
 
-    type NobuRenderMode = "webview" | "browserview" | "default";
+    type NobuRenderMode = "webview" | "default" | "protected";
 }
 
 export {};

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { VscClose, VscLoading } from "react-icons/vsc";
+import { receiver } from "../../utils/nobu";
 
 export interface BrowserTabProps {
     title: string;
-    id: number;
+    id: string;
     active?: boolean;
     loading?: boolean;
     icon?: string | null;
@@ -18,13 +19,11 @@ export function BrowserTab(props: BrowserTabProps) {
     }, [props.icon]);
 
     useEffect(() => {
-        const favListener = (ev: any, icon: string) => {
-            if (icon) setFavicon(icon);
-        };
+        const favListener = receiver("set-favicon", (ev, id, icon) => {
+            if (id === props.id) setFavicon(icon || "");
+        });
 
-        Nobu.on("set-favicon", favListener);
-
-        return () => Nobu.off("set-favicon", favListener);
+        return () => favListener.destroy();
     }, []);
 
     return (
@@ -40,7 +39,14 @@ export function BrowserTab(props: BrowserTabProps) {
                 {props.loading ? (
                     <VscLoading className="text-blue-500 h-5 w-5 animate-spin" />
                 ) : favicon ? (
-                    <img src={favicon} className="h-4 w-4" alt="" onError={() => {}} />
+                    <img
+                        src={favicon}
+                        className="h-4 w-4"
+                        alt=""
+                        onError={() => {
+                            setFavicon("");
+                        }}
+                    />
                 ) : null}
                 <span className="block text-sm truncate text-left" title={props.title}>
                     {props.title}

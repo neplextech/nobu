@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { VscChromeMaximize, VscInspect, VscLoading, VscZoomIn, VscZoomOut } from "react-icons/vsc";
 import { WebView, WebViewTagElement } from "./WebView";
+import { receiver } from "../../utils/nobu";
 
 interface IProps {
     pages: NobuSplitView[];
@@ -47,7 +48,6 @@ export function InternalView(props: InternalProps) {
         switch (action) {
             case "open-devtools":
                 {
-                    console.log(webview.openDevTools());
                     if (!webview.isDevToolsOpened()) webview.openDevTools();
                 }
                 break;
@@ -74,42 +74,36 @@ export function InternalView(props: InternalProps) {
     };
 
     useEffect(() => {
-        const zoomInlistener = (_: any, n: number) => {
+        const zoomInlistener = receiver("zoom-in", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-in");
-        };
-        const zoomResetlistener = (_: any, n: number) => {
+        });
+        const zoomResetlistener = receiver("zoom-reset", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-reset");
-        };
-        const zoomOutlistener = (_: any, n: number) => {
+        });
+        const zoomOutlistener = receiver("zoom-out", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-out");
-        };
+        });
 
-        const triggerReloadListener = (_: any) => {
+        const triggerReloadListener = receiver("trigger-reload", () => {
             execAction("reload");
-        };
+        });
 
-        const cancelReloadListener = (_: any) => {
+        const cancelReloadListener = receiver("cancel-reload", () => {
             execAction("cancel-reload");
-        };
-
-        Nobu.on("zoom-in", zoomInlistener);
-        Nobu.on("zoom-reset", zoomResetlistener);
-        Nobu.on("zoom-out", zoomOutlistener);
-        Nobu.on("trigger-reload", triggerReloadListener);
-        Nobu.on("cancel-reload", cancelReloadListener);
+        });
 
         return () => {
-            Nobu.off("zoom-in", zoomInlistener);
-            Nobu.off("zoom-reset", zoomResetlistener);
-            Nobu.off("zoom-out", zoomOutlistener);
-            Nobu.off("trigger-reload", triggerReloadListener);
-            Nobu.off("cancel-reload", cancelReloadListener);
+            zoomInlistener.destroy();
+            zoomOutlistener.destroy();
+            zoomResetlistener.destroy();
+            triggerReloadListener.destroy();
+            cancelReloadListener.destroy();
         };
     }, []);
 

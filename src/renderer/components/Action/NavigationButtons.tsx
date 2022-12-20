@@ -1,24 +1,34 @@
 import { useEffect, useState } from "react";
 import { HistoryBack, HistoryForward, HistoryReload, HistoryReloadCancel } from "./HistoryAction";
+import { useTab } from "../../hooks/useTab";
+import { receiver } from "../../utils/nobu";
 
 interface IProps {
     loading?: boolean;
-    forward?: boolean;
-    backward?: boolean;
     onClick?: () => void;
 }
 
 export function NavigationButtons(props: IProps) {
     const [reloading, setReloading] = useState(props.loading || false);
     const [historyPs, setHistoryPs] = useState<HistoryPossibilities>({
-        back: props.backward || false,
-        forward: props.forward || false
+        back: false,
+        forward: false
     });
+
+    const { current } = useTab();
 
     useEffect(() => {
         setReloading(props.loading || false);
-        setHistoryPs({ back: !!props.backward, forward: !!props.forward });
-    }, [props.loading, props.forward, props.backward]);
+    }, [props.loading]);
+
+    useEffect(() => {
+        const historyListener = receiver("set-history", (_, id, history) => {
+            if (id !== current.id) return;
+            setHistoryPs(history);
+        });
+
+        return () => historyListener.destroy();
+    }, []);
 
     const handleActions = (t: keyof NobuIncomingChannels) => {
         switch (t) {
@@ -27,7 +37,7 @@ export function NavigationButtons(props: IProps) {
             case "page-reload-cancel":
             case "history-forward":
                 props.onClick?.();
-                Nobu.send(t);
+                Nobu.send(t, current.id);
                 break;
         }
     };

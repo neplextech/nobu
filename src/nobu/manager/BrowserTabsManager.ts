@@ -19,8 +19,8 @@ export class BrowserTabsManager {
     }
 
     public openInNewTab(url: string, referrer?: string | Electron.Referrer) {
-        const tab = this.new(false, "browserview");
-        this.setCurrentTab(tab);
+        const tab = this.new(false, "default");
+        tab.focus();
         tab.resize();
         if (tab.webContents)
             tab.webContents.loadURL(url, {
@@ -31,14 +31,16 @@ export class BrowserTabsManager {
     public broadcastTabs() {
         if (!this.cache.size) return;
 
-        const tabs = [...this.cache.values()];
-        const tabArray = tabs.map((view) => ({
-            id: view.id,
-            active: this.current?.id === view.id,
-            title: view.getTitle() || "",
-            loading: !!view.webContents?.isLoading(),
-            url: view.webContents?.getURL() || ""
-        }));
+        const tabArray = this.cache.map((view) => {
+            view.emitHistoryPossibilities();
+            return {
+                id: view.id,
+                active: view.active,
+                title: view.getTitle() || "",
+                loading: !!view.webContents?.isLoading(),
+                url: view.webContents?.getURL() || ""
+            };
+        });
 
         this.nobu.send("set-tabs", tabArray);
     }
@@ -47,6 +49,11 @@ export class BrowserTabsManager {
         const tab = new NobuTab(this.nobu, {
             renderer: renderMode
         });
+        if (!this.cache.size) {
+            this.setCurrentTab(tab);
+        }
+        this.lastTabId = tab.id;
+        this.cache.set(tab.id, tab);
         if (!disableBroadcast) this.broadcastTabs();
         return tab;
     }
@@ -62,15 +69,15 @@ export class BrowserTabsManager {
         tab.attach();
         tab.resize();
         tab.emitCurrentURL();
-        this.broadcastTabs();
         this.currentId = tab.id;
+        this.broadcastTabs();
     }
 
     public destroy(tabLike: TabResolvable, exit = false) {
         const tab = this.resolveTab(tabLike);
         if (!tab) return;
 
-        const nextTab = this.cache.find((r) => r.id === this.lastTabId || r.id !== tab.id);
+        const nextTab = this.cache.find((r) => r.id === this.lastTabId || r.id !== tab.id) || this.cache.first();
         if (nextTab) this.setCurrentTab(nextTab);
 
         tab.close();

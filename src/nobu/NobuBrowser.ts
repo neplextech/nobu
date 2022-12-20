@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, session } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, session, webContents } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
 import { getDefaultScreens } from "./screens/createScreens";
@@ -16,7 +16,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public theme = nativeTheme;
     public shell = shell;
     public window: BrowserWindow;
-    public renderMode: NobuRenderMode = "browserview";
+    public renderMode: NobuRenderMode = "default";
     public static SPACING_NO_TABS = 80 as const;
     public static SPACING_TABS = 125 as const;
     public static SPACING_FULLSCREEN = 0 as const;
@@ -38,12 +38,12 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         "history-forward": (event) => {
             this.tabs.current?.goForward();
         },
-        navigate: (event, url) => {
-            if (this.renderMode === "browserview") {
-                this.tabs.current?.webContents?.loadURL(url);
+        navigate: (event, id, url) => {
+            if (this.renderMode === "default") {
+                this.tabs.get(id)?.webContents?.loadURL(url);
             } else {
-                this.send("set-url", this.tabs.currentId!, url);
-                this.send("set-webview-url", this.tabs.currentId!, url);
+                this.send("set-url", id, url);
+                this.send("set-webview-url", id, url);
             }
         },
         "new-tab": (event) => {
@@ -51,14 +51,15 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             const tab = this.tabs.new();
             tab.webContents?.loadURL("https://www.google.com");
             tab.resize();
+            tab.focus();
         },
-        "page-reload": (event) => {
+        "page-reload": (event, id) => {
             if (this.renderMode === "default") {
-                this._getWebContent()?.reload();
+                this.tabs.get(id)?.webContents?.reload();
             } else this.send("trigger-reload", this.tabs.currentId!);
         },
-        "page-reload-cancel": (event) => {
-            if (this.renderMode === "default") this._getWebContent()?.stop();
+        "page-reload-cancel": (event, id) => {
+            if (this.renderMode === "default") this.tabs.get(id)?.webContents?.stop();
             else this.send("cancel-reload", this.tabs.currentId!);
         },
         "set-tab": (event, id) => {
@@ -70,14 +71,14 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         "get-url": (event, id) => {
             this.tabs.get(id)?.emitCurrentURL();
         },
-        "zoom-in": () => {
-            this.handleZoomAction("zoom-in");
+        "zoom-in": (_, id) => {
+            this.handleZoomAction("zoom-in", id);
         },
-        "zoom-out": () => {
-            this.handleZoomAction("zoom-out");
+        "zoom-out": (_, id) => {
+            this.handleZoomAction("zoom-out", id);
         },
-        "zoom-reset": () => {
-            this.handleZoomAction("zoom-reset");
+        "zoom-reset": (_, id) => {
+            this.handleZoomAction("zoom-reset", id);
         },
         "network-offline-emulation": (_, set) => {
             const session = this.getDefaultSession();
@@ -205,12 +206,15 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
 
     public setRenderMode(mode: "webview", config: NobuSplitView[] | string | boolean): void;
     public setRenderMode(mode: "default"): void;
-    public setRenderMode(mode: "webview" | "default", config?: NobuSplitView[] | string | boolean): void {
-        if (mode === "webview" || mode === "default") {
+    public setRenderMode(mode: NobuRenderMode, config?: NobuSplitView[] | string | boolean): void {
+        if (mode === "webview" || mode === "protected") {
             for (const tab of this.tabs.cache.values()) {
                 tab.remove();
             }
-            if (mode === "default") return;
+            if (mode === "protected") {
+                this.renderMode = "protected";
+                return;
+            }
             if (Array.isArray(config) && config.length) {
                 this.send("add-webviews", this.tabs.currentId!, config);
             } else if (typeof config === "string") {
@@ -230,7 +234,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             for (const tab of this.tabs.cache.values()) {
                 tab.attach();
             }
-            this.renderMode = "browserview";
+            this.renderMode = "default";
         }
     }
 
@@ -246,21 +250,21 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         });
     }
 
-    public handleZoomAction(action: "zoom-in" | "zoom-out" | "zoom-reset") {
-        if (this.renderMode === "browserview") {
-            const current = this.tabs.current;
-            if (current?.webContents) {
-                const currentLvl = current.webContents.getZoomLevel();
+    public handleZoomAction(action: "zoom-in" | "zoom-out" | "zoom-reset", id?: string) {
+        if (this.renderMode === "default") {
+            const tab = id ? this.tabs.get(id) : this.tabs.current;
+            if (tab?.webContents) {
+                const currentLvl = tab.webContents.getZoomLevel();
                 const lvl = action === "zoom-in" ? currentLvl + 1 : action === "zoom-out" ? currentLvl - 1 : 0;
-                current.webContents.setZoomLevel(lvl);
+                tab.webContents.setZoomLevel(lvl);
             }
         } else {
-            this.send(action, this.tabs.currentId!, Date.now());
+            this.send(action, id || this.tabs.currentId!, Date.now());
         }
     }
 
     public reloadWindow() {
-        if (this.renderMode === "browserview") {
+        if (this.renderMode === "default") {
             this.tabs.current?.webContents?.reload();
         } else if (this.renderMode === "webview") {
             this.send("trigger-reload", this.tabs.currentId!);
