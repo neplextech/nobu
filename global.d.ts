@@ -3,30 +3,25 @@ import type { IpcMainEvent, IpcRendererEvent } from "electron";
 declare global {
     type NobuMainListener<T> = (event: IpcMainEvent, ...args: T) => any;
 
-    interface INobuURLSetPayload {
-        tab: number;
-        url: string;
-    }
-
     interface NobuDispatchChannels {
-        "set-title": [string];
-        "set-url": [INobuURLSetPayload];
-        "set-history": [HistoryPossibilities];
-        "set-favicon": [string];
-        reloading: [];
-        reloaded: [];
+        "set-title": [string, string];
+        "set-url": [string, string];
+        "set-history": [string, HistoryPossibilities];
+        "set-favicon": [string, string];
+        reloading: [string];
+        reloaded: [string];
         "set-tabs": [NobuDispatchedTab[]];
-        "remove-webviews": [];
-        "add-webviews": [NobuSplitView[]];
-        "set-webview-url": [string];
-        "zoom-in": [number];
-        "zoom-reset": [number];
-        "zoom-out": [number];
-        "trigger-reload": [];
-        "cancel-reload": [];
+        "remove-webviews": [string];
+        "add-webviews": [string, NobuSplitView[]];
+        "set-webview-url": [string, string];
+        "zoom-in": [string, number];
+        "zoom-reset": [string, number];
+        "zoom-out": [string, number];
+        "trigger-reload": [string];
+        "cancel-reload": [string];
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
-        "split-view": [NobuSplitView[] | null];
+        "split-view": [string, NobuSplitView[] | null];
     }
 
     interface NobuSessionNetworkError {
@@ -37,33 +32,28 @@ declare global {
     }
 
     interface NobuDispatchedTab {
-        id: number;
+        id: string;
         active: boolean;
         title: string;
         loading: boolean;
         url: string;
     }
 
-    interface NobuNavigationAddress {
-        address: string;
-        tab: number;
-    }
-
     interface NobuIncomingChannels {
-        "history-back": [];
-        "history-forward": [];
-        "page-reload": [];
-        "page-reload-cancel": [];
-        navigate: [NobuNavigationAddress];
+        "history-back": [string];
+        "history-forward": [string];
+        "page-reload": [string];
+        "page-reload-cancel": [string];
+        navigate: [string, string];
         "new-tab": [];
-        "close-tab": [number];
-        "set-tab": [number];
+        "close-tab": [string];
+        "set-tab": [string];
         "get-tabs": [];
-        "get-url": [];
-        "set-splitview-mode": [NobuSplitView[] | null | boolean];
-        "zoom-in": [];
-        "zoom-reset": [];
-        "zoom-out": [];
+        "get-url": [string];
+        "set-splitview-mode": [string, NobuSplitView[] | null | boolean];
+        "zoom-in": [string];
+        "zoom-reset": [string];
+        "zoom-out": [string];
         "network-offline-emulation": [boolean];
         "open-multiview-settings": [];
     }
@@ -88,6 +78,8 @@ declare global {
         back: boolean;
         forward: boolean;
     }
+
+    type NobuRenderMode = "webview" | "browserview" | "default";
 }
 
 export {};

@@ -5,19 +5,24 @@ import { getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
 import { ProtocolServices } from "./services/ProtocolServices";
 import { isDev } from "./utils/isDev";
+import { EventEmitter } from "./utils/EventEmitter";
 
-type NobuRenderMode = "default" | "webview";
+type INobuEventsMap = {
+    resize: () => Awaited<void>;
+};
 
-export class NobuBrowser {
+export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public app = app;
     public theme = nativeTheme;
     public shell = shell;
     public window: BrowserWindow;
-    public renderMode: NobuRenderMode = "default";
+    public renderMode: NobuRenderMode = "browserview";
     public static SPACING_NO_TABS = 80 as const;
     public static SPACING_TABS = 125 as const;
+    public static SPACING_FULLSCREEN = 0 as const;
     public SPACING_NO_TABS = NobuBrowser.SPACING_NO_TABS;
     public SPACING_TABS = NobuBrowser.SPACING_TABS;
+    public SPACING_FULLSCREEN = NobuBrowser.SPACING_FULLSCREEN;
     public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
     public services = new NobuServiceManager(this);
@@ -25,40 +30,36 @@ export class NobuBrowser {
     public channels = {
         "close-tab": (event, id) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
-            this.tabs.delete(id, true);
+            this.tabs.destroy(id, true);
         },
         "history-back": (event) => {
-            const wc = this._getWebContent();
-            const can = wc?.canGoBack();
-            if (can) wc?.goBack();
+            this.tabs.current?.goBack();
         },
         "history-forward": (event) => {
-            const wc = this._getWebContent();
-            const can = wc?.canGoForward();
-            if (can) wc?.goForward();
+            this.tabs.current?.goForward();
         },
         navigate: (event, url) => {
-            // if (this.renderMode === "default") {
-            //     this.tabs.current?.webContents.loadURL(url);
-            // } else {
-            //     this.send("set-url", url);
-            //     this.send("set-webview-url", url);
-            // }
+            if (this.renderMode === "browserview") {
+                this.tabs.current?.webContents?.loadURL(url);
+            } else {
+                this.send("set-url", this.tabs.currentId!, url);
+                this.send("set-webview-url", this.tabs.currentId!, url);
+            }
         },
         "new-tab": (event) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
             const tab = this.tabs.new();
-            tab.webContents.loadURL("https://www.google.com");
-            this.tabs.resize(tab);
+            tab.webContents?.loadURL("https://www.google.com");
+            tab.resize();
         },
         "page-reload": (event) => {
             if (this.renderMode === "default") {
                 this._getWebContent()?.reload();
-            } else this.send("trigger-reload");
+            } else this.send("trigger-reload", this.tabs.currentId!);
         },
         "page-reload-cancel": (event) => {
             if (this.renderMode === "default") this._getWebContent()?.stop();
-            else this.send("cancel-reload");
+            else this.send("cancel-reload", this.tabs.currentId!);
         },
         "set-tab": (event, id) => {
             if (this.renderMode === "default") this.tabs.setCurrentTab(id);
@@ -66,8 +67,8 @@ export class NobuBrowser {
         "get-tabs": (event) => {
             this.tabs.broadcastTabs();
         },
-        "get-url": (event) => {
-            this.tabs.emitCurrentURL();
+        "get-url": (event, id) => {
+            this.tabs.get(id)?.emitCurrentURL();
         },
         "zoom-in": () => {
             this.handleZoomAction("zoom-in");
@@ -88,10 +89,14 @@ export class NobuBrowser {
             // TODO
             // this.tabs.openInNewTab("nobu-settings://multiview");
         },
-        "set-splitview-mode": () => {}
+        "set-splitview-mode": (_, id, data) => {
+            // this.setRenderMode("webview");
+        }
     } as NobuIncomingChannelsHandler;
 
     public constructor() {
+        super();
+        this.setMaxListeners(Infinity);
         this.window = new BrowserWindow({
             width: 800,
             height: 600,
@@ -128,6 +133,19 @@ export class NobuBrowser {
         Object.entries(this.channels).forEach(([name, listener]) => {
             ipcMain.on(name, listener);
         });
+
+        this.window.webContents.on("enter-html-full-screen", () => {
+            this.emit("resize");
+        });
+
+        this.window.webContents.on("leave-html-full-screen", () => {
+            this.emit("resize");
+        });
+
+        this.window.on("resized", () => {
+            this.emit("resize");
+        });
+
         const session = this.getDefaultSession();
         session.webRequest.onBeforeRequest((details, cb) => {
             if (this.offlineModeEmulation)
@@ -175,8 +193,8 @@ export class NobuBrowser {
 
     public close() {
         this._removeListeners();
-        for (const v of Object.values(this.tabs.views)) {
-            this.tabs.delete(v, false);
+        for (const [_, v] of this.tabs.cache) {
+            this.tabs.destroy(v, false);
         }
         this.window.destroy();
     }
@@ -188,37 +206,36 @@ export class NobuBrowser {
     public setRenderMode(mode: "webview", config: NobuSplitView[] | string | boolean): void;
     public setRenderMode(mode: "default"): void;
     public setRenderMode(mode: "webview" | "default", config?: NobuSplitView[] | string | boolean): void {
-        if (mode === "webview") {
-            for (const view in this.tabs.views) {
-                const tab = this.tabs.views[view];
-                if (tab) this.tabs.remove(tab);
+        if (mode === "webview" || mode === "default") {
+            for (const tab of this.tabs.cache.values()) {
+                tab.remove();
             }
+            if (mode === "default") return;
             if (Array.isArray(config) && config.length) {
-                this.send("add-webviews", config);
+                this.send("add-webviews", this.tabs.currentId!, config);
             } else if (typeof config === "string") {
                 const screens = getDefaultScreens(config, "all");
-                this.send("add-webviews", screens);
+                this.send("add-webviews", this.tabs.currentId!, screens);
             } else if (typeof config === "boolean") {
                 if (!config) return this.setRenderMode("default");
                 if (this.renderMode === "webview") return this.setRenderMode("default");
-                const url = this.tabs.getCurrentURL();
+                const url = this.tabs.current?.getCurrentURL();
                 if (!url) return;
                 const screens = getDefaultScreens(url, "all");
-                this.send("add-webviews", screens);
+                this.send("add-webviews", this.tabs.currentId!, screens);
             }
             this.renderMode = "webview";
         } else {
-            this.send("remove-webviews");
-            for (const view in this.tabs.views) {
-                const tab = this.tabs.views[view];
-                if (tab) this.tabs.attach(tab, tab.webContents.id === this.tabs.current?.webContents.id);
+            this.send("remove-webviews", this.tabs.currentId!);
+            for (const tab of this.tabs.cache.values()) {
+                tab.attach();
             }
-            this.renderMode = "default";
+            this.renderMode = "browserview";
         }
     }
 
     public getAllTabs() {
-        return this.tabs.getAllViews();
+        return this.tabs.getAllTabs();
     }
 
     public async alert(message: string) {
@@ -230,23 +247,25 @@ export class NobuBrowser {
     }
 
     public handleZoomAction(action: "zoom-in" | "zoom-out" | "zoom-reset") {
-        if (this.renderMode === "webview") {
-            this.send(action, Date.now());
-        } else {
+        if (this.renderMode === "browserview") {
             const current = this.tabs.current;
-            if (current) {
+            if (current?.webContents) {
                 const currentLvl = current.webContents.getZoomLevel();
                 const lvl = action === "zoom-in" ? currentLvl + 1 : action === "zoom-out" ? currentLvl - 1 : 0;
                 current.webContents.setZoomLevel(lvl);
             }
+        } else {
+            this.send(action, this.tabs.currentId!, Date.now());
         }
     }
 
     public reloadWindow() {
-        if (this.renderMode === "default") {
-            this.tabs.current?.webContents.reload();
+        if (this.renderMode === "browserview") {
+            this.tabs.current?.webContents?.reload();
+        } else if (this.renderMode === "webview") {
+            this.send("trigger-reload", this.tabs.currentId!);
         } else {
-            this.send("trigger-reload");
+            this.window.webContents.reload();
         }
     }
 
@@ -256,5 +275,18 @@ export class NobuBrowser {
 
     public getDefaultSession() {
         return session.defaultSession;
+    }
+
+    public isFullScreen() {
+        return this.window.isFullScreen();
+    }
+
+    public setFullScreen() {
+        if (this.isFullScreen()) return;
+        if (this.window.isFullScreenable()) this.window.setFullScreen(true);
+    }
+
+    public unsetFullScreen() {
+        if (!this.isFullScreen()) return;
     }
 }
