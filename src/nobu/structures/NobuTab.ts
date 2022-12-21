@@ -25,6 +25,12 @@ export class NobuTab {
     public id = randomUUID();
     public view: BrowserView | null = null;
     private __resizeListener = () => this.resize();
+    private __readyListener = () => {
+        if (this.active) {
+            this.attach();
+            this.resize();
+        }
+    }
 
     private _channels = Object.entries({
         "did-finish-load": (event) => {
@@ -76,6 +82,7 @@ export class NobuTab {
             this.view = this._initBrowserView();
             this._attachListeners();
             this.nobu.on("resize", this.__resizeListener);
+            this.nobu.on("ready", this.__readyListener);
         }
     }
 
@@ -116,12 +123,17 @@ export class NobuTab {
     private _resize(view: BrowserView, size?: number) {
         size ??= this.getSpacingSize();
         const bound = this.nobu.window.getBounds();
+        // view.setAutoResize({
+        //     height: true,
+        //     width: true,
+        //     horizontal: true
+        // });
         view.setBounds({ x: 0, y: size, width: bound.width, height: bound.height - size });
     }
 
     public getSpacingSize() {
         if (this.nobu.isFullScreen()) return this.nobu.SPACING_FULLSCREEN;
-        return this.nobu.SPACING_TABS;
+        return this.nobu.CLIENT_SPACING;
     }
 
     public getRendererType() {
@@ -197,7 +209,7 @@ export class NobuTab {
         if (!this.view) return;
         try {
             this.nobu.window.addBrowserView(this.view);
-        } catch {}
+        } catch { }
     }
 
     public remove() {
@@ -205,7 +217,7 @@ export class NobuTab {
         this._removeListeners();
         try {
             this.nobu.window.removeBrowserView(this.view);
-        } catch {}
+        } catch { }
     }
 
     public get webContents() {

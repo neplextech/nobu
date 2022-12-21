@@ -42,6 +42,10 @@ function getEditSubMenu(): Electron.MenuItemConstructorOptions[] {
     return [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }];
 }
 
+export function createEmptyAppMenu() {
+    return Menu.buildFromTemplate([]);
+}
+
 export function createApplicationMenu(nobu: NobuBrowser) {
     const template: Electron.MenuItemConstructorOptions[] = [
         {

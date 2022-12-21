@@ -37,6 +37,7 @@ declare global {
         title: string;
         loading: boolean;
         url: string;
+        icon?: string;
     }
 
     interface NobuIncomingChannels {
@@ -56,6 +57,8 @@ declare global {
         "zoom-out": [string];
         "network-offline-emulation": [boolean];
         "open-multiview-settings": [];
+        "__$ch": [number, number];
+        "__$ready": [];
     }
 
     interface NobuSplitView {

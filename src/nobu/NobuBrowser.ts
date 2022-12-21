@@ -6,9 +6,11 @@ import { AdblockerService } from "./services/AdblockerService";
 import { ProtocolServices } from "./services/ProtocolServices";
 import { isDev } from "./utils/isDev";
 import { EventEmitter } from "./utils/EventEmitter";
+import { isWindows } from "./utils/platform";
 
 type INobuEventsMap = {
     resize: () => Awaited<void>;
+    ready: () => Awaited<void>;
 };
 
 export class NobuBrowser extends EventEmitter<INobuEventsMap> {
@@ -23,6 +25,8 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public SPACING_NO_TABS = NobuBrowser.SPACING_NO_TABS;
     public SPACING_TABS = NobuBrowser.SPACING_TABS;
     public SPACING_FULLSCREEN = NobuBrowser.SPACING_FULLSCREEN;
+    public CLIENT_SPACING: number = this.SPACING_TABS;
+    public CLIENT_HEIGHT: number = 0;
     public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
     public services = new NobuServiceManager(this);
@@ -92,6 +96,15 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         },
         "set-splitview-mode": (_, id, data) => {
             // this.setRenderMode("webview");
+        },
+        "__$ch": (_, h, ch) => {
+            if (!isNaN(h) && h >= 0) this.CLIENT_SPACING = h;
+            if (!isNaN(ch) && ch > 0) this.CLIENT_HEIGHT = ch;
+
+            this.emit("resize");
+        },
+        "__$ready": () => {
+            this.emit("ready");
         }
     } as NobuIncomingChannelsHandler;
 

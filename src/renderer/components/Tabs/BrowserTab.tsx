@@ -29,7 +29,7 @@ export function BrowserTab(props: BrowserTabProps) {
     return (
         <div
             onClick={props.onClick}
-            className={`flex flex-1 max-w-xs items-center justify-between dark:text-white text-black px-3 py-2 rounded-t-md ${
+            className={`flex flex-1 max-w-xs items-center justify-between dark:text-white text-black px-3 py-2 rounded-t-md undraggable ${
                 props.active
                     ? "dark:bg-xdark-0 bg-xlight-0"
                     : "dark:hover:bg-xdark-0 hover:bg-xlight-0 hover:bg-opacity-70"

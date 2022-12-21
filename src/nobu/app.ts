@@ -1,10 +1,11 @@
 import { app, BrowserWindow, Menu } from "electron";
 import * as path from "path";
-import { createApplicationMenu } from "./menu/appMenu";
+import { createApplicationMenu, createEmptyAppMenu } from "./menu/appMenu";
 import { NobuBrowser } from "./NobuBrowser";
 import { ProtocolList } from "./services/ProtocolServices";
 import { NobuUpdater } from "./updater/NobuUpdater";
 import { isDev } from "./utils/isDev";
+import { isWindows } from "./utils/platform";
 
 let nobu: NobuBrowser;
 
@@ -44,13 +45,15 @@ async function bootstrap() {
             (updater as NobuUpdater | null) = null;
         }
 
-        const tab = nobu.tabs.new();
+        const tab = nobu.tabs.new({
+            offscreen: true
+        });
         tab.webContents!.loadURL("https://www.google.com");
         nobu.create();
         tab.resize();
     });
 
-    Menu.setApplicationMenu(createApplicationMenu(nobu));
+    Menu.setApplicationMenu(isWindows ? createEmptyAppMenu() : createApplicationMenu(nobu));
 }
 
 if (!instanceLock) {

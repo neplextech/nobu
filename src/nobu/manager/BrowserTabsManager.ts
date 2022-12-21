@@ -6,6 +6,12 @@ import { Collection } from "@discordjs/collection";
 
 type TabResolvable = string | NobuTab;
 
+interface NobuTabCreateProps {
+    offscreen?: boolean;
+    disableBroadcast?: boolean;
+    renderMode?: NobuRenderMode;
+}
+
 export class BrowserTabsManager {
     public lastTabId: string | null = null;
     public currentId: string | null = null;
@@ -19,7 +25,9 @@ export class BrowserTabsManager {
     }
 
     public openInNewTab(url: string, referrer?: string | Electron.Referrer) {
-        const tab = this.new(false, "default");
+        const tab = this.new({
+            renderMode: "default"
+        });
         tab.focus();
         tab.resize();
         if (tab.webContents)
@@ -38,19 +46,25 @@ export class BrowserTabsManager {
                 active: view.active,
                 title: view.getTitle() || "",
                 loading: !!view.webContents?.isLoading(),
-                url: view.webContents?.getURL() || ""
+                url: view.webContents?.getURL() || "",
+                icon: view.favicon
             };
         });
 
         this.nobu.send("set-tabs", tabArray);
     }
 
-    public new(disableBroadcast = false, renderMode = this.nobu.renderMode) {
+    public new(props: NobuTabCreateProps = {}) {
+        const {
+            disableBroadcast = false,
+            renderMode = this.nobu.renderMode,
+            offscreen = false
+        } = props;
         const tab = new NobuTab(this.nobu, {
             renderer: renderMode
         });
         if (!this.cache.size) {
-            this.setCurrentTab(tab);
+            this.setCurrentTab(tab, offscreen);
         }
         this.lastTabId = tab.id;
         this.cache.set(tab.id, tab);
@@ -58,7 +72,7 @@ export class BrowserTabsManager {
         return tab;
     }
 
-    public setCurrentTab(tabLike: TabResolvable) {
+    public setCurrentTab(tabLike: TabResolvable, offscreen = false) {
         const tab = this.resolveTab(tabLike);
         if (!tab) return;
         if (this.current) {
@@ -66,8 +80,10 @@ export class BrowserTabsManager {
             this.lastTabId = this.current.id;
         }
 
-        tab.attach();
-        tab.resize();
+        if (!offscreen) {
+            tab.attach();
+            tab.resize();
+        }
         tab.emitCurrentURL();
         this.currentId = tab.id;
         this.broadcastTabs();
