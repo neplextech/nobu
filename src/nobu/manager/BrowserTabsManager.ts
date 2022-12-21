@@ -55,11 +55,7 @@ export class BrowserTabsManager {
     }
 
     public new(props: NobuTabCreateProps = {}) {
-        const {
-            disableBroadcast = false,
-            renderMode = this.nobu.renderMode,
-            offscreen = false
-        } = props;
+        const { disableBroadcast = false, renderMode = this.nobu.renderMode, offscreen = false } = props;
         const tab = new NobuTab(this.nobu, {
             renderer: renderMode
         });

@@ -52,10 +52,15 @@ export default function App() {
             );
         });
 
+        const wvUrlListener = receiver("set-webview-url", (_, id, url) => {
+            setSplitView((p) => p.map((m) => ({ ...m, url: m.tabId === id ? url : m.url })));
+        });
+
         return () => {
             tabsListener.destroy();
             addressRec.destroy();
             splitListener.destroy();
+            wvUrlListener.destroy();
         };
     }, []);
 

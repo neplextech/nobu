@@ -2,20 +2,21 @@ import { useEffect, useRef, useState } from "react";
 import { VscChromeMaximize, VscInspect, VscLoading, VscZoomIn, VscZoomOut } from "react-icons/vsc";
 import { WebView, WebViewTagElement } from "./WebView";
 import { receiver } from "../../utils/nobu";
+import { formatAddress } from "../../utils/formatAddress";
 
 interface IProps {
-    pages: NobuSplitView[];
+    pages: (NobuSplitView & { tabId: string })[];
     phone?: boolean;
     onStartLoading?: () => void;
     onStopLoading?: () => void;
 }
 
 export function MultiView(props: IProps) {
-    const { pages, phone, onStartLoading, onStopLoading } = props;
+    const { pages, phone = false, onStartLoading, onStopLoading } = props;
 
     return (
         <div className="overflow-auto mb-[70px]">
-            <div className={`grid ${phone ? "lg:grid-cols-3 grid-cols-1" : "grid-cols-1"} gap-2`}>
+            <div className={`grid ${phone ? "lg:grid-cols-3 grid-cols-1" : "grid-cols-1"} gap-2 mb-5`}>
                 {pages.map((m, i) => {
                     return (
                         <InternalView data={m} key={i} onStartLoading={onStartLoading} onStopLoading={onStopLoading} />
@@ -27,18 +28,25 @@ export function MultiView(props: IProps) {
 }
 
 interface InternalProps {
-    data: NobuSplitView;
+    data: NobuSplitView & { tabId: string };
     onStartLoading?: () => void;
     onStopLoading?: () => void;
 }
 
-type InternalWebviewAction = "open-devtools" | "zoom-in" | "zoom-out" | "zoom-reset" | "reload" | "cancel-reload";
+type InternalWebviewAction =
+    | "open-devtools"
+    | "zoom-in"
+    | "zoom-out"
+    | "zoom-reset"
+    | "reload"
+    | "cancel-reload"
+    | "back"
+    | "forward";
 
 const globalNonceStore = new Set<number>();
 
 export function InternalView(props: InternalProps) {
     const { data, onStartLoading, onStopLoading } = props;
-
     const currentViewRef = useRef<WebViewTagElement>(null);
 
     const execAction = (action: InternalWebviewAction) => {
@@ -64,6 +72,12 @@ export function InternalView(props: InternalProps) {
                 break;
             case "reload":
                 webview.reload();
+                break;
+            case "back":
+                if (webview.canGoBack()) webview.goBack();
+                break;
+            case "forward":
+                if (webview.canGoForward()) webview.reload();
                 break;
             case "cancel-reload":
                 webview.stop();
@@ -94,6 +108,14 @@ export function InternalView(props: InternalProps) {
             execAction("reload");
         });
 
+        const triggerBackListener = receiver("trigger-back", () => {
+            execAction("back");
+        });
+
+        const triggerForwardListener = receiver("trigger-forward", () => {
+            execAction("forward");
+        });
+
         const cancelReloadListener = receiver("cancel-reload", () => {
             execAction("cancel-reload");
         });
@@ -103,6 +125,8 @@ export function InternalView(props: InternalProps) {
             zoomOutlistener.destroy();
             zoomResetlistener.destroy();
             triggerReloadListener.destroy();
+            triggerBackListener.destroy();
+            triggerForwardListener.destroy();
             cancelReloadListener.destroy();
         };
     }, []);
@@ -129,8 +153,19 @@ export function InternalView(props: InternalProps) {
                     width: data.cw,
                     height: data.ch
                 }}
-                onLoadStart={() => onStartLoading?.()}
-                onDidStopLoading={() => onStopLoading?.()}
+                onWillNavigate={(ev) => {
+                    Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                }}
+                onDidNavigateInPage={(ev) => {
+                    // in-page navigations have some problems
+                    // Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                }}
+                onDidStartLoading={() => {
+                    Nobu.send("set-loading", data.tabId, true);
+                }}
+                onDidStopLoading={() => {
+                    Nobu.send("set-loading", data.tabId, false);
+                }}
                 useragent={data.userAgent || undefined}
                 className="border dark:border-gray-500 border-gray-300 bg-slate-300"
             ></WebView>

@@ -12,7 +12,7 @@ export const ActionBar = forwardRef((props, ref: React.ForwardedRef<HTMLDivEleme
     useEffect(() => {
         Nobu.send("__$ready");
     }, []);
-    
+
     const handleAddressSubmit = (address: string) => {
         if (address) {
             Nobu.send("navigate", current.id, formatAddress(address));

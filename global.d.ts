@@ -18,6 +18,8 @@ declare global {
         "zoom-reset": [string, number];
         "zoom-out": [string, number];
         "trigger-reload": [string];
+        "trigger-back": [string];
+        "trigger-forward": [string];
         "cancel-reload": [string];
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
@@ -57,8 +59,10 @@ declare global {
         "zoom-out": [string];
         "network-offline-emulation": [boolean];
         "open-multiview-settings": [];
-        "__$ch": [number, number];
-        "__$ready": [];
+        __$ch: [number, number];
+        __$ready: [];
+        "set-loading": [string, boolean];
+        "set-favicon": [string, boolean];
     }
 
     interface NobuSplitView {

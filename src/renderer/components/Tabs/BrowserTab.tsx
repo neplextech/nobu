@@ -13,17 +13,31 @@ export interface BrowserTabProps {
 
 export function BrowserTab(props: BrowserTabProps) {
     const [favicon, setFavicon] = useState(props.icon || "");
+    const [isLoading, setIsLoading] = useState(props.loading || false);
 
     useEffect(() => {
         if (props.icon) setFavicon(props.icon);
-    }, [props.icon]);
+        if (props.loading != null) setIsLoading(props.loading);
+    }, [props.icon, props.loading]);
 
     useEffect(() => {
         const favListener = receiver("set-favicon", (ev, id, icon) => {
             if (id === props.id) setFavicon(icon || "");
         });
 
-        return () => favListener.destroy();
+        const reloadingListener = receiver("reloading", (ev, id) => {
+            if (id === props.id) setIsLoading(true);
+        });
+
+        const reloadedListener = receiver("reloaded", (ev, id) => {
+            if (id === props.id) setIsLoading(false);
+        });
+
+        return () => {
+            favListener.destroy();
+            reloadingListener.destroy();
+            reloadedListener.destroy();
+        };
     }, []);
 
     return (
@@ -36,7 +50,7 @@ export function BrowserTab(props: BrowserTabProps) {
             }`}
         >
             <div className="flex space-x-3 w-[90%] place-items-center">
-                {props.loading ? (
+                {isLoading ? (
                     <VscLoading className="text-blue-500 h-5 w-5 animate-spin" />
                 ) : favicon ? (
                     <img

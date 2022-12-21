@@ -30,7 +30,7 @@ export class NobuTab {
             this.attach();
             this.resize();
         }
-    }
+    };
 
     private _channels = Object.entries({
         "did-finish-load": (event) => {
@@ -78,12 +78,10 @@ export class NobuTab {
     } as WebContentEvents);
 
     public constructor(public nobu: NobuBrowser, public config: INobuTabConfig) {
-        if (this.config.renderer === "default") {
-            this.view = this._initBrowserView();
-            this._attachListeners();
-            this.nobu.on("resize", this.__resizeListener);
-            this.nobu.on("ready", this.__readyListener);
-        }
+        this.view = this._initBrowserView();
+        this._attachListeners();
+        this.nobu.on("resize", this.__resizeListener);
+        this.nobu.on("ready", this.__readyListener);
     }
 
     private _initBrowserView() {
@@ -206,18 +204,18 @@ export class NobuTab {
     }
 
     public attach() {
-        if (!this.view) return;
+        if (!this.view || this.config.renderer !== "default") return;
         try {
             this.nobu.window.addBrowserView(this.view);
-        } catch { }
+        } catch {}
     }
 
     public remove() {
-        if (!this.view) return;
+        if (!this.view || this.config.renderer !== "default") return;
         this._removeListeners();
         try {
             this.nobu.window.removeBrowserView(this.view);
-        } catch { }
+        } catch {}
     }
 
     public get webContents() {

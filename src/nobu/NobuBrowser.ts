@@ -31,24 +31,24 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public tabs = new BrowserTabsManager(this);
     public services = new NobuServiceManager(this);
     public offlineModeEmulation = false;
+    public splitViewTabId: string | null = null;
     public channels = {
         "close-tab": (event, id) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
             this.tabs.destroy(id, true);
         },
         "history-back": (event) => {
+            if (this.renderMode === "webview") return this.send("trigger-back", this.tabs.currentId!);
             this.tabs.current?.goBack();
         },
         "history-forward": (event) => {
+            if (this.renderMode === "webview") return this.send("trigger-forward", this.tabs.currentId!);
             this.tabs.current?.goForward();
         },
         navigate: (event, id, url) => {
-            if (this.renderMode === "default") {
-                this.tabs.get(id)?.webContents?.loadURL(url);
-            } else {
-                this.send("set-url", id, url);
-                this.send("set-webview-url", id, url);
-            }
+            this.tabs.get(id)?.webContents?.loadURL(url);
+            this.send("set-url", id, url);
+            if (this.renderMode === "webview") this.send("set-webview-url", id, url);
         },
         "new-tab": (event) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
@@ -95,18 +95,23 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             // this.tabs.openInNewTab("nobu-settings://multiview");
         },
         "set-splitview-mode": (_, id, data) => {
-            // this.setRenderMode("webview");
+            this.splitViewTabId = id;
+            this.setRenderMode("webview", data || "");
         },
-        "__$ch": (_, h, ch) => {
+        __$ch: (_, h, ch) => {
             if (!isNaN(h) && h >= 0) this.CLIENT_SPACING = h;
             if (!isNaN(ch) && ch > 0) this.CLIENT_HEIGHT = ch;
 
             this.emit("resize");
         },
-        "__$ready": () => {
+        __$ready: () => {
             this.emit("ready");
+        },
+        "set-loading": (_, id, loading) => {
+            if (loading) this.send("reloading", id);
+            else this.send("reloaded", id);
         }
-    } as NobuIncomingChannelsHandler;
+    } as Partial<NobuIncomingChannelsHandler>;
 
     public constructor() {
         super();
@@ -221,31 +226,47 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public setRenderMode(mode: "default"): void;
     public setRenderMode(mode: NobuRenderMode, config?: NobuSplitView[] | string | boolean): void {
         if (mode === "webview" || mode === "protected") {
-            for (const tab of this.tabs.cache.values()) {
+            if (this.tabs.has(this.splitViewTabId!)) {
+                const tab = this.tabs.get(this.splitViewTabId!)!;
+                tab.webContents?.setAudioMuted(true);
                 tab.remove();
+            } else {
+                for (const tab of this.tabs.cache.values()) {
+                    tab.webContents?.setAudioMuted(true);
+                    tab.remove();
+                }
             }
             if (mode === "protected") {
                 this.renderMode = "protected";
                 return;
             }
             if (Array.isArray(config) && config.length) {
-                this.send("add-webviews", this.tabs.currentId!, config);
+                this.send("split-view", this.tabs.currentId!, config);
             } else if (typeof config === "string") {
                 const screens = getDefaultScreens(config, "all");
-                this.send("add-webviews", this.tabs.currentId!, screens);
+                this.send("split-view", this.tabs.currentId!, screens);
             } else if (typeof config === "boolean") {
                 if (!config) return this.setRenderMode("default");
                 if (this.renderMode === "webview") return this.setRenderMode("default");
                 const url = this.tabs.current?.getCurrentURL();
                 if (!url) return;
                 const screens = getDefaultScreens(url, "all");
-                this.send("add-webviews", this.tabs.currentId!, screens);
+                this.send("split-view", this.tabs.currentId!, screens);
             }
             this.renderMode = "webview";
         } else {
-            this.send("remove-webviews", this.tabs.currentId!);
-            for (const tab of this.tabs.cache.values()) {
-                tab.attach();
+            const current = this.tabs.get(this.splitViewTabId!);
+            this.splitViewTabId = null;
+
+            this.send("split-view", current?.id || this.tabs.currentId!, []);
+            if (current) {
+                current.webContents?.setAudioMuted(false);
+                current.attach();
+            } else {
+                for (const tab of this.tabs.cache.values()) {
+                    tab.webContents?.setAudioMuted(false);
+                    tab.attach();
+                }
             }
             this.renderMode = "default";
         }
