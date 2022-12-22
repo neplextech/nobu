@@ -32,6 +32,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public services = new NobuServiceManager(this);
     public offlineModeEmulation = false;
     public splitViewTabId: string | null = null;
+    private __lastNavigationURL: string | null = null;
     public channels = {
         "close-tab": (event, id) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
@@ -46,6 +47,8 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             this.tabs.current?.goForward();
         },
         navigate: (event, id, url) => {
+            if (url === this.__lastNavigationURL) return;
+            this.__lastNavigationURL = url;
             this.tabs.get(id)?.webContents?.loadURL(url);
             this.send("set-url", id, url);
             if (this.renderMode === "webview") this.send("set-webview-url", id, url);
@@ -110,7 +113,18 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         "set-loading": (_, id, loading) => {
             if (loading) this.send("reloading", id);
             else this.send("reloaded", id);
-        }
+        },
+        "set-title": (_, id, title) => {
+            const tab = this.tabs.get(id);
+            if (tab) tab.setTitle(title);
+            this.tabs.broadcastTabs();
+        },
+        "set-favicon": (_, id, icn) => {
+            if (!icn) return;
+            const tab = this.tabs.get(id);
+            if (tab) tab.setFavicon(icn);
+            this.tabs.broadcastTabs();
+        },
     } as Partial<NobuIncomingChannelsHandler>;
 
     public constructor() {

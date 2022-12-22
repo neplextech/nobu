@@ -6,12 +6,20 @@ import { formatAddress } from "../../utils/formatAddress";
 import { useTab } from "../../hooks/useTab";
 import { forwardRef, useEffect, useRef } from "react";
 
-export const ActionBar = forwardRef((props, ref: React.ForwardedRef<HTMLDivElement>) => {
+export const ActionBar = () => {
     const { current, tabs } = useTab();
+
+    const actionBarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         Nobu.send("__$ready");
     }, []);
+
+    useEffect(() => {
+        const action = actionBarRef.current;
+        if (!action) return;
+        Nobu.send("__$ch", action.clientHeight + 25, action.parentElement?.clientHeight ?? -1);
+    }, [actionBarRef.current?.clientHeight]);
 
     const handleAddressSubmit = (address: string) => {
         if (address) {
@@ -21,7 +29,7 @@ export const ActionBar = forwardRef((props, ref: React.ForwardedRef<HTMLDivEleme
 
     return (
         <div
-            ref={ref}
+            ref={actionBarRef}
             className="w-full flex flex-col overflow-hidden top-0 left-0 right-0 fixed h-auto max-h-28 bg-inherit"
         >
             {!tabs.length ? null : (
@@ -78,4 +86,4 @@ export const ActionBar = forwardRef((props, ref: React.ForwardedRef<HTMLDivEleme
             )}
         </div>
     );
-});
+};

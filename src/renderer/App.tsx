@@ -8,7 +8,6 @@ export default function App() {
     const [tabs, setTabs] = useState<NobuDispatchedTab[]>([]);
     const [currentTab, setCurrentTab] = useState<NobuDispatchedTab | null>(null);
     const [splitView, setSplitView] = useState<(NobuSplitView & { tabId: string })[]>([]);
-    const actionBarRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         Nobu.send("get-tabs");
@@ -19,12 +18,6 @@ export default function App() {
         if (current) document.title = current.title || "Nobu Browser";
         setCurrentTab(current || null);
     }, [tabs]);
-
-    useEffect(() => {
-        const action = actionBarRef.current;
-        if (!action) return;
-        Nobu.send("__$ch", action.clientHeight, action.parentElement?.clientHeight ?? -1);
-    }, [actionBarRef.current?.clientHeight]);
 
     useEffect(() => {
         const tabsListener = receiver("set-tabs", (_, tabs) => {
@@ -72,7 +65,7 @@ export default function App() {
             }}
         >
             <div className="dark:bg-xdark select-none bg-xlight overflow-hidden flex flex-col space-y-28 max-h-screen">
-                <ActionBar ref={actionBarRef} />
+                <ActionBar />
                 {currentTab ? <ContentArea tab={currentTab} split={splitView} /> : null}
             </div>
         </NobuTabContext.Provider>

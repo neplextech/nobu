@@ -158,7 +158,13 @@ export function InternalView(props: InternalProps) {
                 }}
                 onDidNavigateInPage={(ev) => {
                     // in-page navigations have some problems
-                    // Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                    Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                }}
+                onPageTitleUpdated={(ev) => {
+                    Nobu.send("set-title", data.tabId, ev.title);
+                }}
+                onPageFaviconUpdated={(ev) => {
+                    Nobu.send("set-favicon", data.tabId, ev.favicons[0]);
                 }}
                 onDidStartLoading={() => {
                     Nobu.send("set-loading", data.tabId, true);
@@ -166,7 +172,7 @@ export function InternalView(props: InternalProps) {
                 onDidStopLoading={() => {
                     Nobu.send("set-loading", data.tabId, false);
                 }}
-                useragent={data.userAgent || undefined}
+                // useragent={data.userAgent || undefined}
                 className="border dark:border-gray-500 border-gray-300 bg-slate-300"
             ></WebView>
         </div>

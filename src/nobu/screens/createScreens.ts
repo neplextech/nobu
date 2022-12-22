@@ -211,7 +211,6 @@ export const MobileScreens: GenericScreen[] = [
         cw: 360,
         ch: 740,
         type: "mobile",
-        default: true,
         id: 18,
         userAgent:
             "Mozilla/5.0 (Linux; Android 5.1.1; SAMSUNG SM-G920P Build/LMY47X) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/3.2 Chrome/38.0.2125.102 Mobile Safari/E7FBAF"
@@ -233,7 +232,6 @@ export const MobileScreens: GenericScreen[] = [
         height: 2560,
         cw: 360,
         ch: 640,
-        default: true,
         type: "mobile",
         id: 20,
         userAgent:
@@ -245,7 +243,6 @@ export const MobileScreens: GenericScreen[] = [
         height: 2560,
         cw: 360,
         ch: 640,
-        default: true,
         type: "mobile",
         id: 21,
         userAgent:
@@ -346,7 +343,6 @@ export const MobileScreens: GenericScreen[] = [
         cw: 360,
         ch: 740,
         type: "mobile",
-        default: true,
         id: 30,
         userAgent:
             "Mozilla/5.0 (Linux; Android 5.1.1; SAMSUNG SM-G920P Build/LMY47X) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/3.2 Chrome/38.0.2125.102 Mobile Safari/E7FBAF"
@@ -401,7 +397,6 @@ export const MobileScreens: GenericScreen[] = [
         height: 2280,
         cw: 384,
         ch: 783,
-        default: true,
         type: "mobile",
         id: 35,
         userAgent:
@@ -435,7 +430,6 @@ export const MobileScreens: GenericScreen[] = [
         height: 1920,
         cw: 432,
         ch: 768,
-        default: true,
         type: "mobile",
         id: 38,
         userAgent:
@@ -602,7 +596,6 @@ export const MobileScreens: GenericScreen[] = [
         cw: 393,
         ch: 775,
         type: "mobile",
-        default: true,
         id: 53,
         userAgent:
             "Mozilla/5.0 (Linux; Android 6.0.1; Redmi 4A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.116 Mobile Safari/537.36"
@@ -614,7 +607,6 @@ export const MobileScreens: GenericScreen[] = [
         cw: 393,
         ch: 739,
         type: "mobile",
-        default: true,
         id: 54,
         userAgent:
             "Mozilla/5.0 (Linux; Android 6.0.1; Redmi 4A Build/MMB29M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/60.0.3112.116 Mobile Safari/537.36"
@@ -670,7 +662,6 @@ export const MobileScreens: GenericScreen[] = [
         cw: 390,
         ch: 695,
         type: "mobile",
-        default: true,
         id: 59,
         userAgent:
             "Mozilla/5.0 (BlackBerry; U; BlackBerry 9780; en-GB) AppleWebKit/534.8+ (KHTML, like Gecko) Version/6.0.0.546 Mobile Safari/534.8+"
@@ -772,7 +763,6 @@ export const TabletScreens: GenericScreen[] = [
         height: 2732,
         cw: 1024,
         ch: 1366,
-        default: true,
         type: "tablet",
         id: 0,
         userAgent:
@@ -850,7 +840,6 @@ export const TabletScreens: GenericScreen[] = [
         height: 1280,
         cw: 800,
         ch: 1280,
-        default: true,
         type: "tablet",
         id: 7,
         userAgent:
@@ -893,7 +882,6 @@ export const TabletScreens: GenericScreen[] = [
         name: "Samsung Nexus 10",
         width: 1600,
         height: 2560,
-        default: true,
         cw: 800,
         ch: 1280,
         type: "tablet",
@@ -919,7 +907,6 @@ export const TabletScreens: GenericScreen[] = [
         cw: 600,
         ch: 960,
         type: "tablet",
-        default: true,
         id: 13,
         userAgent:
             "Mozilla/5.0 (Linux; Android 8.1.0; ASUS_Z01QD) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.76 Mobile Safari/537.36"

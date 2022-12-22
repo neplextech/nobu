@@ -201,6 +201,6 @@ export const WebView = React.forwardRef(
             };
         }, []);
 
-        return <webview id={id} ref={ref} {...newProp} />;
+        return <webview id={id} ref={ref} onError={() => {}} {...newProp} />;
     }
 );

@@ -62,7 +62,8 @@ declare global {
         __$ch: [number, number];
         __$ready: [];
         "set-loading": [string, boolean];
-        "set-favicon": [string, boolean];
+        "set-favicon": [string, string];
+        "set-title": [string, string];
     }
 
     interface NobuSplitView {
