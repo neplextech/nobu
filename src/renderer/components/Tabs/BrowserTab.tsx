@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { VscClose, VscLoading } from "react-icons/vsc";
 import { receiver } from "../../utils/nobu";
+import { useTab } from "../../hooks/useTab";
 
 export interface BrowserTabProps {
     title: string;
@@ -9,11 +10,13 @@ export interface BrowserTabProps {
     loading?: boolean;
     icon?: string | null;
     onClick?: () => any;
+    onClose: (id: string) => any;
 }
 
 export function BrowserTab(props: BrowserTabProps) {
     const [favicon, setFavicon] = useState(props.icon || "");
     const [isLoading, setIsLoading] = useState(props.loading || false);
+    const { current } = useTab();
 
     useEffect(() => {
         if (props.icon) setFavicon(props.icon);
@@ -69,7 +72,7 @@ export function BrowserTab(props: BrowserTabProps) {
             <VscClose
                 className="h-5 w-5 dark:bg-xdark-0 bg-xlight-0"
                 onClick={() => {
-                    Nobu.send("close-tab", props.id);
+                    return props.onClose(props.id);
                 }}
             />
         </div>

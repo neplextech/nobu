@@ -1,4 +1,4 @@
-import { VscAdd, VscExtensions } from "react-icons/vsc";
+import { VscAdd, VscExtensions, VscGear } from "react-icons/vsc";
 import { BrowserTab } from "../Tabs/BrowserTab";
 import { NavigationButtons } from "../Action/NavigationButtons";
 import { AddressBar } from "../Action/AddressBar";
@@ -6,7 +6,12 @@ import { formatAddress } from "../../utils/formatAddress";
 import { useTab } from "../../hooks/useTab";
 import { forwardRef, useEffect, useRef } from "react";
 
-export const ActionBar = () => {
+interface IProps {
+    setTabs: React.Dispatch<React.SetStateAction<NobuDispatchedTab[]>>;
+}
+
+export const ActionBar = (props: IProps) => {
+    const { setTabs } = props;
     const { current, tabs } = useTab();
 
     const actionBarRef = useRef<HTMLDivElement>(null);
@@ -42,7 +47,22 @@ export const ActionBar = () => {
                                         key={i}
                                         {...m}
                                         onClick={() => {
+                                            if (current.virtual)
+                                                return void setTabs((prev) =>
+                                                    prev.map((m) => ({
+                                                        ...m,
+                                                        active: m.id === current.id
+                                                    }))
+                                                );
                                             Nobu.send("set-tab", m.id);
+                                        }}
+                                        onClose={(id) => {
+                                            if (current.virtual) {
+                                                setTabs((prev) => prev.filter((r) => r.id === current.id));
+                                                Nobu.send("__$internal", null);
+                                                return;
+                                            }
+                                            Nobu.send("close-tab", id);
                                         }}
                                     />
                                 );
@@ -67,20 +87,29 @@ export const ActionBar = () => {
                         <div className="w-[60%]">
                             <AddressBar current={current} onSubmit={handleAddressSubmit} />
                         </div>
-                        <div className="flex space-x-2">
-                            <VscExtensions
-                                className="h-5 w-5 cursor-pointer hover:opacity-70"
-                                title="Toggle Multi Rendering Mode"
-                                onClick={(ev) => {
-                                    if (ev.shiftKey) {
-                                        ev.preventDefault();
-                                        Nobu.send("open-multiview-settings");
-                                    } else {
-                                        Nobu.send("set-splitview-mode", current.id, true);
-                                    }
-                                }}
-                            />
-                        </div>
+                        {current.virtual ? null : (
+                            <div className="flex space-x-2">
+                                <VscExtensions
+                                    className="h-5 w-5 cursor-pointer hover:opacity-70"
+                                    title="Toggle Multi Rendering Mode"
+                                    onClick={(ev) => {
+                                        if (ev.shiftKey) {
+                                            ev.preventDefault();
+                                            Nobu.send("__$internal", { page: "multiview-settings" });
+                                        } else {
+                                            Nobu.send("set-splitview-mode", current.id, true);
+                                        }
+                                    }}
+                                />
+                                <VscGear
+                                    className="h-5 w-5 cursor-pointer hover:opacity-70"
+                                    title="Settings"
+                                    onClick={(ev) => {
+                                        Nobu.send("__$internal", { page: "settings" });
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 </>
             )}

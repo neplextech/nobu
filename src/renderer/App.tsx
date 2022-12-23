@@ -49,11 +49,26 @@ export default function App() {
             setSplitView((p) => p.map((m) => ({ ...m, url: m.tabId === id ? url : m.url })));
         });
 
+        const vTabL = receiver("create-virtual-tab", (_, config) => {
+            setTabs((prev) => {
+                (prev = prev
+                    .filter((r) => r.id !== config.id)
+                    .map((m) => ({ ...m, active: false })) as typeof prev).push({
+                    ...config,
+                    active: true,
+                    loading: false,
+                    virtual: true
+                });
+                return prev;
+            });
+        });
+
         return () => {
             tabsListener.destroy();
             addressRec.destroy();
             splitListener.destroy();
             wvUrlListener.destroy();
+            vTabL.destroy();
         };
     }, []);
 
@@ -65,7 +80,7 @@ export default function App() {
             }}
         >
             <div className="dark:bg-xdark select-none bg-xlight overflow-hidden flex flex-col space-y-28 max-h-screen">
-                <ActionBar />
+                <ActionBar setTabs={setTabs} />
                 {currentTab ? <ContentArea tab={currentTab} split={splitView} /> : null}
             </div>
         </NobuTabContext.Provider>

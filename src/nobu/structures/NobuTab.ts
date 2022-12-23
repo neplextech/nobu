@@ -19,10 +19,14 @@ interface WebContentEvents {
 }
 
 export class NobuTab {
+    public static generateId() {
+        return randomUUID();
+    }
+
     public url!: string;
     public favicon!: string;
     public title!: string;
-    public id = randomUUID();
+    public id = NobuTab.generateId();
     public view: BrowserView | null = null;
     private __resizeListener = () => this.resize();
     private __readyListener = () => {

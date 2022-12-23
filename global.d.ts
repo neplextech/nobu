@@ -24,6 +24,8 @@ declare global {
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
         "split-view": [string, NobuSplitView[]];
+        "create-virtual-tab": [INobuInternalPage];
+        "nobu-settings": [NobuBrowserSetting];
     }
 
     interface NobuSessionNetworkError {
@@ -40,14 +42,37 @@ declare global {
         loading: boolean;
         url: string;
         icon?: string;
+        virtual?: boolean;
+        page?: NobuInternalPage;
     }
+
+    interface NobuBrowserSetting {
+        searchEngine: string;
+    }
+
+    type NobuInternalPage = "settings" | "multiview-settings";
+
+    interface INobuInternalPageConfig {
+        page: NobuInternalPage;
+        tabId?: string;
+    }
+
+    interface INobuInternalPage {
+        page: NobuInternalPage;
+        id: string;
+        title: string;
+        url: string;
+        icon?: string;
+    }
+
+    type NavigationData = string | { search: string };
 
     interface NobuIncomingChannels {
         "history-back": [string];
         "history-forward": [string];
         "page-reload": [string];
         "page-reload-cancel": [string];
-        navigate: [string, string];
+        navigate: [string, NavigationData];
         "new-tab": [];
         "close-tab": [string];
         "set-tab": [string];
@@ -64,6 +89,9 @@ declare global {
         "set-loading": [string, boolean];
         "set-favicon": [string, string];
         "set-title": [string, string];
+        __$internal: [INobuInternalPageConfig | null];
+        "get-settings": [];
+        "set-settings": [NobuBrowserSetting];
     }
 
     interface NobuSplitView {

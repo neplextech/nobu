@@ -1,5 +1,8 @@
 import { useTab } from "../../hooks/useTab";
 import { MultiView } from "../MultiView/MultiView";
+import { BrowserSettings } from "../../pages/BrowserSettings";
+import { MultiViewPage } from "../../pages/MultiViewPage";
+import { MultiViewSettings } from "../../pages/MultiViewSettings";
 
 interface IProps {
     tab: NobuDispatchedTab;
@@ -8,30 +11,19 @@ interface IProps {
 
 export function ContentArea(props: IProps) {
     const { split = [], tab } = props;
-    const { current } = useTab();
 
-    const phones = split.filter((r) => r.type === "mobile");
-    const tabs = split.filter((r) => r.type === "tablet");
+    if (tab.virtual && tab.page) {
+        switch (tab.page) {
+            case "multiview-settings":
+                return <MultiViewSettings />;
+            case "settings":
+                return <BrowserSettings />;
+            default:
+                return <></>;
+        }
+    }
 
-    if (current?.id === tab.id && split.length)
-        return (
-            <div className="flex flex-col space-y-4 overflow-y-auto w-full dark:text-white light:text-black">
-                <h1 className="text-center text-2xl">Multi-View Mode</h1>
-                {phones.length ? (
-                    <div className="flex flex-col items-center">
-                        <h1 className="text-lg font-medium">Mobiles</h1>
-                        <MultiView pages={phones} phone />
-                    </div>
-                ) : null}
-
-                {tabs.length ? (
-                    <div className="flex flex-col items-center">
-                        <h1 className="text-lg font-medium">Tablets</h1>
-                        <MultiView pages={tabs} />
-                    </div>
-                ) : null}
-            </div>
-        );
+    if (split.length) return <MultiViewPage split={split} tab={tab} />;
 
     return <></>;
 }

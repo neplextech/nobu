@@ -26,6 +26,8 @@ function nif(p: string) {
 }
 
 export class ProtocolServices extends INobuService {
+    public static List = ProtocolList;
+
     private __register() {
         for (const p of Object.values(ProtocolList)) {
             if (protocol.isProtocolRegistered(p.name)) continue;

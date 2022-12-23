@@ -45,25 +45,27 @@ export function NavigationButtons(props: IProps) {
     return (
         <div className="flex space-x-4 dark:text-white text-black">
             <HistoryBack
-                disabled={!historyPs.back}
+                disabled={current.virtual || !historyPs.back}
                 onClick={() => {
                     handleActions("history-back");
                 }}
             />
             {reloading ? (
                 <HistoryReloadCancel
+                    disabled={current.virtual}
                     onClick={() => {
                         handleActions("page-reload-cancel");
                     }}
                 />
             ) : (
                 <HistoryReload
+                    disabled={current.virtual}
                     onClick={() => {
                         handleActions("page-reload");
                     }}
                 />
             )}
-            {!historyPs.forward ? null : (
+            {current.virtual || !historyPs.forward ? null : (
                 <HistoryForward
                     onClick={() => {
                         handleActions("history-forward");

@@ -48,7 +48,7 @@ async function bootstrap() {
         const tab = nobu.tabs.new({
             offscreen: true
         });
-        tab.webContents!.loadURL("https://www.google.com");
+        tab.webContents!.loadURL(nobu.getDefaultPageURL());
         nobu.create();
         tab.resize();
     });

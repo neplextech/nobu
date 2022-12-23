@@ -1,12 +1,22 @@
 import { NobuBrowser } from "../NobuBrowser";
 import { INobuService } from "../services/AbstractService";
+import type { StorageService, AdblockerService, ProtocolServices } from "../services";
+
+interface INobuServiceMap {
+    store: StorageService;
+    adblocker: AdblockerService;
+    protocol: ProtocolServices;
+}
+
+type ServiceName = keyof INobuServiceMap;
+type ServiceValue = INobuServiceMap[ServiceName];
 
 export class NobuServiceManager {
-    public services = new Map<string, INobuService>();
+    public services = new Map<ServiceName, ServiceValue>();
 
     public constructor(public nobu: NobuBrowser) {}
 
-    public async register(name: string, service: INobuService, enable = false) {
+    public async register<K extends ServiceName>(name: K, service: INobuServiceMap[K], enable = false) {
         if (this.isRegistered(name)) await this.unregister(name);
         this.services.set(name, service);
         if (enable) {
@@ -14,19 +24,19 @@ export class NobuServiceManager {
         }
     }
 
-    public async unregister(name: string) {
+    public async unregister(name: ServiceName) {
         const service = this.services.get(name);
         if (!service) return;
         await service.disable();
         this.services.delete(name);
     }
 
-    public isRegistered(name: string) {
+    public isRegistered(name: ServiceName) {
         return this.services.has(name);
     }
 
-    public getService<T = INobuService>(name: string): T {
-        return this.services.get(name) as T;
+    public getService<K extends ServiceName>(name: K): INobuServiceMap[K] {
+        return this.services.get(name) as INobuServiceMap[K];
     }
 
     public getRegisteredServices() {

@@ -3,6 +3,8 @@ export function formatAddress(src: string) {
         const url = new URL(src);
         return url.href;
     } catch {
-        return `https://www.google.com/search?q=${encodeURIComponent(src)}`;
+        return {
+            search: encodeURIComponent(src)
+        };
     }
 }

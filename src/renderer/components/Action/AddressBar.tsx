@@ -26,8 +26,11 @@ export function AddressBar(props: IProps) {
         <input
             type="text"
             placeholder="Search or enter web address"
-            className="w-full dark:bg-xdark bg-xlight p-1 px-5 rounded-full focus:outline dark:focus:outline-gray-500 focus:outline-gray-300"
+            className={`w-full ${
+                current.virtual ? "cursor-not-allowed" : ""
+            } dark:bg-xdark bg-xlight p-1 px-5 rounded-full focus:outline dark:focus:outline-gray-500 focus:outline-gray-300`}
             onKeyUp={(e) => {
+                if (current.virtual) return e.preventDefault();
                 if (e.keyCode === 13) {
                     e.preventDefault();
                     if (e.currentTarget.value) {
@@ -35,6 +38,7 @@ export function AddressBar(props: IProps) {
                     }
                 }
             }}
+            disabled={!!current.virtual}
             autoCorrect="false"
             autoCapitalize="false"
             autoComplete="false"
@@ -42,6 +46,7 @@ export function AddressBar(props: IProps) {
             autoSave="false"
             value={currentAddress}
             onChange={(e) => {
+                if (current.virtual) return e.preventDefault();
                 setCurrentAddress(e.currentTarget.value);
             }}
         />

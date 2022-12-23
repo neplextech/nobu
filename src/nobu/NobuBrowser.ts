@@ -7,6 +7,10 @@ import { ProtocolServices } from "./services/ProtocolServices";
 import { isDev } from "./utils/isDev";
 import { EventEmitter } from "./utils/EventEmitter";
 import { isWindows } from "./utils/platform";
+import { NobuTab } from "./structures/NobuTab";
+import { StorageService } from "./services/StorageService";
+import { resolveSearchEngine, resolveSearchEngineName } from "./utils/resolveSearchEngine";
+import { SEARCH_ENGINE } from "./utils/constants";
 
 type INobuEventsMap = {
     resize: () => Awaited<void>;
@@ -46,7 +50,8 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             if (this.renderMode === "webview") return this.send("trigger-forward", this.tabs.currentId!);
             this.tabs.current?.goForward();
         },
-        navigate: (event, id, url) => {
+        navigate: (event, id, address) => {
+            const url = typeof address === "string" ? address : this.makeSearchEngineQuery(address.search);
             if (url === this.__lastNavigationURL) return;
             this.__lastNavigationURL = url;
             this.tabs.get(id)?.webContents?.loadURL(url);
@@ -56,7 +61,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         "new-tab": (event) => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
             const tab = this.tabs.new();
-            tab.webContents?.loadURL("https://www.google.com");
+            tab.webContents?.loadURL(this.getDefaultPageURL());
             tab.resize();
             tab.focus();
         },
@@ -125,6 +130,28 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             if (tab) tab.setFavicon(icn);
             this.tabs.broadcastTabs();
         },
+        __$internal: (_, config) => {
+            if (!config?.page) return this.setRenderMode("default");
+            if (config.page)
+                return this.setRenderMode("protected", {
+                    page: config.page,
+                    tabId: config.tabId
+                });
+        },
+        "get-settings": (_) => {
+            const settings = this.services.getService("store").settings.store;
+            const data = {
+                ...settings,
+                searchEngine: resolveSearchEngineName(settings.searchEngine) || "google"
+            };
+
+            this.send("nobu-settings", data);
+        },
+        "set-settings": (_, setting) => {
+            this.services.getService("store").settings.set({
+                searchEngine: resolveSearchEngine(setting.searchEngine)
+            });
+        }
     } as Partial<NobuIncomingChannelsHandler>;
 
     public constructor() {
@@ -153,6 +180,17 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         if (isDev) this.window.webContents.openDevTools({ mode: "detach" });
     }
 
+    public makeSearchEngineQuery(i: string) {
+        try {
+            const settings = this.services.getService("store").settings;
+            const engine = settings.get("searchEngine");
+
+            return `${engine}${i}`;
+        } catch {
+            return `${SEARCH_ENGINE.google}${i}`;
+        }
+    }
+
     private _getWebContent() {
         return this.renderMode === "default" ? this.tabs.current?.webContents : this.window.webContents;
     }
@@ -160,6 +198,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     private async _initServices() {
         await this.services.register("adblocker", new AdblockerService(this), true);
         await this.services.register("protocol", new ProtocolServices(this), true);
+        await this.services.register("store", new StorageService(this), true);
     }
 
     private _attachListeners() {
@@ -237,9 +276,37 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     }
 
     public setRenderMode(mode: "webview", config: NobuSplitView[] | string | boolean): void;
+    public setRenderMode(mode: "protected", config?: INobuInternalPageConfig): void;
     public setRenderMode(mode: "default"): void;
-    public setRenderMode(mode: NobuRenderMode, config?: NobuSplitView[] | string | boolean): void {
-        if (mode === "webview" || mode === "protected") {
+    public setRenderMode(
+        mode: NobuRenderMode,
+        config?: NobuSplitView[] | INobuInternalPageConfig | string | boolean
+    ): void {
+        if (mode === "protected") {
+            const iconfig = config as INobuInternalPageConfig;
+            if (this.tabs.has(iconfig.tabId!)) {
+                var tab = this.tabs.get(iconfig.tabId!)!;
+                tab.webContents?.setAudioMuted(true);
+                tab.remove();
+            } else {
+                for (const tab of this.tabs.cache.values()) {
+                    tab.webContents?.setAudioMuted(true);
+                    tab.remove();
+                }
+            }
+
+            this.renderMode = "protected";
+
+            const pageConfig = {
+                id: iconfig.tabId || NobuTab.generateId(),
+                page: iconfig.page,
+                title: iconfig.page,
+                url: `${ProtocolServices.List.settings.name}://${iconfig.page}`,
+                icon: "/nobu.png"
+            } as INobuInternalPage;
+
+            return this.send("create-virtual-tab", pageConfig);
+        } else if (mode === "webview") {
             if (this.tabs.has(this.splitViewTabId!)) {
                 const tab = this.tabs.get(this.splitViewTabId!)!;
                 tab.webContents?.setAudioMuted(true);
@@ -250,10 +317,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
                     tab.remove();
                 }
             }
-            if (mode === "protected") {
-                this.renderMode = "protected";
-                return;
-            }
+
             if (Array.isArray(config) && config.length) {
                 this.send("split-view", this.tabs.currentId!, config);
             } else if (typeof config === "string") {
@@ -340,5 +404,16 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
 
     public unsetFullScreen() {
         if (!this.isFullScreen()) return;
+    }
+
+    public getDefaultPageURL() {
+        const engine = this.services.getService("store").settings.get("searchEngine");
+
+        try {
+            const url = new URL(engine);
+            return url.origin;
+        } catch {
+            return engine;
+        }
     }
 }

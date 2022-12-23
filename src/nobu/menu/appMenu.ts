@@ -81,7 +81,7 @@ export function createApplicationMenu(nobu: NobuBrowser) {
                 {
                     label: "Toggle Adblocker",
                     async click() {
-                        const service = nobu.services.getService<AdblockerService>("adblocker");
+                        const service = nobu.services.getService("adblocker");
                         if (!service) return;
                         if (!service.enabled) {
                             await service.enable();
