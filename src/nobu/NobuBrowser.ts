@@ -416,4 +416,8 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             return engine;
         }
     }
+
+    public reload() {
+        this.app.relaunch();
+    }
 }

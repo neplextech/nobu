@@ -10,17 +10,18 @@ const NobuSettingsSchema = {
 } as Schema<NobuBrowserSetting>;
 
 export class StorageService extends INobuService {
+    private __unsubSettingSubscription!: Function;
     public settings = new Store({
         schema: NobuSettingsSchema
     });
 
-    public enable(): void | Promise<void> {
-        // TODO: attach listener
-        return Promise.resolve();
+    public enable() {
+        this.__unsubSettingSubscription = this.settings.onDidAnyChange((newData) => {
+            if (newData) this.nobu.send("nobu-settings", newData);
+        });
     }
 
-    public disable(): void | Promise<void> {
-        // TODO: remove listener
-        return Promise.resolve();
+    public disable() {
+        this.__unsubSettingSubscription?.();
     }
 }
