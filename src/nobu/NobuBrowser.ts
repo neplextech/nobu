@@ -3,14 +3,14 @@ import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
 import { getDefaultScreens } from "./screens/createScreens";
 import { AdblockerService } from "./services/AdblockerService";
-import { ProtocolServices } from "./services/ProtocolServices";
+import { ProtocolService } from "./services/ProtocolService";
 import { isDev } from "./utils/isDev";
 import { EventEmitter } from "./utils/EventEmitter";
 import { isWindows } from "./utils/platform";
 import { NobuTab } from "./structures/NobuTab";
 import { StorageService } from "./services/StorageService";
 import { resolveSearchEngine, resolveSearchEngineName } from "./utils/resolveSearchEngine";
-import { SEARCH_ENGINE } from "./utils/constants";
+import { SEARCH_ENGINE, USER_AGENT } from "./utils/constants";
 
 type INobuEventsMap = {
     resize: () => Awaited<void>;
@@ -173,6 +173,8 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             backgroundColor: "#2b2b2b"
         });
 
+        this.window.webContents.setUserAgent(USER_AGENT);
+
         this._loadContent();
         this._attachListeners();
         this._initServices();
@@ -197,7 +199,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
 
     private async _initServices() {
         await this.services.register("adblocker", new AdblockerService(this), true);
-        await this.services.register("protocol", new ProtocolServices(this), true);
+        await this.services.register("protocol", new ProtocolService(this), true);
         await this.services.register("store", new StorageService(this), true);
     }
 
@@ -301,7 +303,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
                 id: iconfig.tabId || NobuTab.generateId(),
                 page: iconfig.page,
                 title: iconfig.page,
-                url: `${ProtocolServices.List.settings.name}://${iconfig.page}`,
+                url: `${ProtocolService.List.settings.name}://${iconfig.page}`,
                 icon: "/nobu.png"
             } as INobuInternalPage;
 

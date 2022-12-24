@@ -1,3 +1,5 @@
+import { app } from "electron";
+
 export const NOBU_GITHUB = "https://github.com/neplextech/nobu" as const;
 
 export const SEARCH_ENGINE = {
@@ -6,3 +8,5 @@ export const SEARCH_ENGINE = {
     bing: "https://www.bing.com/search?q=",
     duckduckgo: "https://duckduckgo.com/?q="
 } as const;
+
+export const USER_AGENT = app.userAgentFallback.replace(/Electron\/.+\s/, "");

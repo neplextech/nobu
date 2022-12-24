@@ -2,6 +2,7 @@ import { BrowserView } from "electron";
 import { NobuBrowser } from "../NobuBrowser";
 import { randomUUID } from "crypto";
 import { createContextMenu } from "../menu/contextMenu";
+import { USER_AGENT } from "../utils/constants";
 
 interface INobuTabConfig {
     renderer: NobuRenderMode;
@@ -96,6 +97,8 @@ export class NobuTab {
         });
 
         this._resize(view);
+
+        view.webContents.setUserAgent(USER_AGENT);
 
         return view;
     }

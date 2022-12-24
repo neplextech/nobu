@@ -1,11 +1,11 @@
 import { NobuBrowser } from "../NobuBrowser";
 import { INobuService } from "../services/AbstractService";
-import type { StorageService, AdblockerService, ProtocolServices } from "../services";
+import type { StorageService, AdblockerService, ProtocolService } from "../services";
 
 interface INobuServiceMap {
     store: StorageService;
     adblocker: AdblockerService;
-    protocol: ProtocolServices;
+    protocol: ProtocolService;
 }
 
 type ServiceName = keyof INobuServiceMap;
