@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { VscChromeMaximize, VscInspect, VscLoading, VscZoomIn, VscZoomOut } from "react-icons/vsc";
+import { useEffect, useRef } from "react";
+import { VscInspect } from "react-icons/vsc";
 import { WebView, WebViewTagElement } from "./WebView";
 import { receiver } from "../../utils/nobu";
 import { formatAddress } from "../../utils/formatAddress";
@@ -46,7 +46,7 @@ type InternalWebviewAction =
 const globalNonceStore = new Set<number>();
 
 export function InternalView(props: InternalProps) {
-    const { data, onStartLoading, onStopLoading } = props;
+    const { data } = props;
     const currentViewRef = useRef<WebViewTagElement>(null);
 
     const execAction = (action: InternalWebviewAction) => {

@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { VscClose, VscLoading } from "react-icons/vsc";
 import { receiver } from "../../utils/nobu";
-import { useTab } from "../../hooks/useTab";
 
 export interface BrowserTabProps {
     title: string;
@@ -9,14 +8,13 @@ export interface BrowserTabProps {
     active?: boolean;
     loading?: boolean;
     icon?: string | null;
-    onClick?: () => any;
-    onClose: (id: string) => any;
+    onClick?: () => unknown;
+    onClose: (id: string) => unknown;
 }
 
 export function BrowserTab(props: BrowserTabProps) {
     const [favicon, setFavicon] = useState(props.icon || "");
     const [isLoading, setIsLoading] = useState(props.loading || false);
-    const { current } = useTab();
 
     useEffect(() => {
         if (props.icon) setFavicon(props.icon);

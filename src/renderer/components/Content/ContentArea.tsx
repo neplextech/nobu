@@ -1,5 +1,3 @@
-import { useTab } from "../../hooks/useTab";
-import { MultiView } from "../MultiView/MultiView";
 import { BrowserSettings } from "../../pages/BrowserSettings";
 import { MultiViewPage } from "../../pages/MultiViewPage";
 import { MultiViewSettings } from "../../pages/MultiViewSettings";

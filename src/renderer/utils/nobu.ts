@@ -1,6 +1,6 @@
 export function receiver<K extends keyof NobuDispatchChannels>(
     event: K,
-    handler: (ev: Electron.IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
+    handler: (ev: Electron.IpcRendererEvent, ...args: NobuDispatchChannels[K]) => unknown
 ) {
     Nobu.on(event, handler);
 

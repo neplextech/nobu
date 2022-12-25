@@ -10,7 +10,7 @@ const NobuSettingsSchema = {
 } as Schema<NobuBrowserSetting>;
 
 export class StorageService extends INobuService {
-    private __unsubSettingSubscription!: Function;
+    private __unsubSettingSubscription!: () => void;
     public settings = new Store({
         schema: NobuSettingsSchema
     });

@@ -4,7 +4,7 @@ import { NavigationButtons } from "../Action/NavigationButtons";
 import { AddressBar } from "../Action/AddressBar";
 import { formatAddress } from "../../utils/formatAddress";
 import { useTab } from "../../hooks/useTab";
-import { forwardRef, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 interface IProps {
     setTabs: React.Dispatch<React.SetStateAction<NobuDispatchedTab[]>>;
@@ -104,7 +104,7 @@ export const ActionBar = (props: IProps) => {
                                 <VscGear
                                     className="h-5 w-5 cursor-pointer hover:opacity-70"
                                     title="Settings"
-                                    onClick={(ev) => {
+                                    onClick={() => {
                                         Nobu.send("__$internal", { page: "settings" });
                                     }}
                                 />

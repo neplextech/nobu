@@ -18,10 +18,10 @@ export const ProtocolList = {
     }
 } as const;
 
-function nif(p: string) {
-    if (p.startsWith("file://")) return fileURLToPath(p);
-    return p;
-}
+// function nif(p: string) {
+//     if (p.startsWith("file://")) return fileURLToPath(p);
+//     return p;
+// }
 
 export class ProtocolService extends INobuService {
     public static List = ProtocolList;

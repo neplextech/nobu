@@ -1,5 +1,3 @@
-import { BrowserView } from "electron";
-import { createContextMenu } from "../menu/contextMenu";
 import { NobuBrowser } from "../NobuBrowser";
 import { NobuTab } from "../structures/NobuTab";
 import { Collection } from "@discordjs/collection";

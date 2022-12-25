@@ -1,8 +1,5 @@
 {
-    "root": false,
-    "parser": "@typescript-eslint/parser",
-    "plugins": ["@typescript-eslint"],
-    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "plugin:react/recommended"],
+    "extends": ["../../.eslintrc", "plugin:react/recommended"],
     "settings": {
         "react": {
             "version": "detect"

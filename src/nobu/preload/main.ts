@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
 ipcRenderer.setMaxListeners(Infinity);

@@ -37,6 +37,7 @@ export class NobuUpdater {
 
     private __getCurrentVersion() {
         try {
+            // eslint-disable-next-line @typescript-eslint/no-var-requires
             return require(`${__dirname}/../../package.json`).version as string;
         } catch {
             return null;
@@ -45,6 +46,7 @@ export class NobuUpdater {
 
     public check() {
         if (!app.isPackaged) return Promise.resolve(false);
+        // eslint-disable-next-line no-async-promise-executor
         return new Promise<boolean>(async (resolve) => {
             this.updater.on("update-not-available", () => {
                 resolve(false);

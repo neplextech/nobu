@@ -1,5 +1,4 @@
 import { NobuBrowser } from "../NobuBrowser";
-import { INobuService } from "../services/AbstractService";
 import type { StorageService, AdblockerService, ProtocolService } from "../services";
 
 interface INobuServiceMap {

@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const getVersionTag = () => document.getElementById("version");
     const getState = () => document.getElementById("status");
 
-    ipcRenderer.on("checking-for-update", (e) => {
+    ipcRenderer.on("checking-for-update", () => {
         const state = getState();
         if (state) state.innerHTML = "Checking for updates...";
     });
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
             state.innerHTML = `<b>Downloading Update (${perc}%)</b><br><progress max="100" value="${perc}"></progress>`;
     });
 
-    ipcRenderer.on("update-downloaded", (e) => {
+    ipcRenderer.on("update-downloaded", () => {
         const state = getState();
 
         if (state) state.innerHTML = "Finished downloading the update!";

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { receiver } from "./utils/nobu";
 import { ActionBar } from "./components/Action/ActionBar";
 import { ContentArea } from "./components/Content/ContentArea";

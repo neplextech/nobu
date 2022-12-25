@@ -1,7 +1,6 @@
 import { Menu } from "electron";
 import { NobuBrowser } from "../NobuBrowser";
 import { getDefaultScreens } from "../screens/createScreens";
-import { AdblockerService } from "../services/AdblockerService";
 import { commandAccelerators } from "../utils/accelerators";
 import { NOBU_GITHUB } from "../utils/constants";
 import { isMac } from "../utils/platform";
