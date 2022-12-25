@@ -4,7 +4,7 @@ import Store, { Schema } from "electron-store";
 
 const NobuSettingsSchema = {
     searchEngine: {
-        default: SEARCH_ENGINE.google,
+        default: SEARCH_ENGINE.brave,
         type: "string"
     }
 } as Schema<NobuBrowserSetting>;

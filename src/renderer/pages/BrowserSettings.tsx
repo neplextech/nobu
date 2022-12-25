@@ -45,10 +45,16 @@ export function BrowserSettings() {
                                 <option value="" disabled>
                                     --Select One--
                                 </option>
-                                <option value="google">Google</option>
                                 <option value="bing">Bing</option>
-                                <option value="ecosia">Ecosia</option>
+                                <option value="brave">Brave</option>
                                 <option value="duckduckgo">DuckDuckGo</option>
+                                <option value="ecosia">Ecosia</option>
+                                <option value="google">Google</option>
+                                <option value="mojeek">Mojeek</option>
+                                <option value="presearch">Presearch</option>
+                                <option value="qwant">Qwant</option>
+                                <option value="startpage">Startpage</option>
+                                <option value="yahoo">Yahoo</option>
                             </select>
                         </div>
                         <button

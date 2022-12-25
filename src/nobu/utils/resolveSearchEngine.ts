@@ -3,15 +3,8 @@ import { SEARCH_ENGINE } from "./constants";
 export function resolveSearchEngine(src: string) {
     const engine = src as keyof typeof SEARCH_ENGINE;
 
-    switch (engine) {
-        case "google":
-        case "bing":
-        case "duckduckgo":
-        case "ecosia":
-            return SEARCH_ENGINE[engine];
-        default:
-            return SEARCH_ENGINE.google;
-    }
+    if (engine in SEARCH_ENGINE) return SEARCH_ENGINE[engine];
+    return SEARCH_ENGINE.brave;
 }
 
 export function resolveSearchEngineName(src: string) {

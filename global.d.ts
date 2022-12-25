@@ -94,16 +94,18 @@ declare global {
         "set-settings": [NobuBrowserSetting];
     }
 
+    type ViewportType = "tablet" | "mobile" | "desktop" | "custom";
+
     interface NobuSplitView {
         url: string;
-        height: number;
-        width: number;
+        height?: number;
+        width?: number;
         ch: number;
         cw: number;
         name?: string;
         id: number;
         userAgent?: string;
-        type: "tablet" | "mobile";
+        type: ViewportType;
     }
 
     type NobuIncomingChannelsHandler = {

@@ -31,6 +31,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public SPACING_FULLSCREEN = NobuBrowser.SPACING_FULLSCREEN;
     public CLIENT_SPACING: number = this.SPACING_TABS;
     public CLIENT_HEIGHT: number = 0;
+    public userAgent = USER_AGENT;
     public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
     public services = new NobuServiceManager(this);

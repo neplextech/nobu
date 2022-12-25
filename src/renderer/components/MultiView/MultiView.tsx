@@ -135,7 +135,7 @@ export function InternalView(props: InternalProps) {
         <div>
             <div className={`flex space-x-2`}>
                 <h1 className="text-sm">
-                    {data.name || `Screen-${data.id}`} | ({data.height}x{data.width})
+                    {data.name || `Screen-${data.id}`} | ({data.width}x{data.height})
                 </h1>
                 <div className="flex space-x-2">
                     <VscInspect
