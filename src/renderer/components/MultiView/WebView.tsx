@@ -53,7 +53,7 @@ interface IWebviewTag {
     onWillNavigate(event: Electron.WillNavigateEvent): void;
     onDidStartNavigation(event: Electron.DidStartNavigationEvent): void;
     onDidRedirectNavigation(event: Electron.DidRedirectNavigationEvent): void;
-    onDidnavigate(event: Electron.DidNavigateEvent): void;
+    onDidNavigate(event: Electron.DidNavigateEvent): void;
     onDidFrameNavigate(event: Electron.DidFrameNavigateEvent): void;
     onDidNavigateInPage(event: Electron.DidNavigateInPageEvent): void;
     onClose(event: Electron.Event): void;
@@ -201,6 +201,6 @@ export const WebView = React.forwardRef(
             };
         }, []);
 
-        return <webview id={id} ref={ref} {...newProp} />;
+        return <webview id={id} ref={ref} onError={() => {}} {...newProp} />;
     }
 );

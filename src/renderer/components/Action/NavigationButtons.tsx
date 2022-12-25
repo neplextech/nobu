@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { HistoryBack, HistoryForward, HistoryReload, HistoryReloadCancel } from "./HistoryAction";
+import { useTab } from "../../hooks/useTab";
+import { receiver } from "../../utils/nobu";
 
 interface IProps {
     loading?: boolean;
@@ -13,32 +15,19 @@ export function NavigationButtons(props: IProps) {
         forward: false
     });
 
+    const { current } = useTab();
+
     useEffect(() => {
         setReloading(props.loading || false);
     }, [props.loading]);
 
     useEffect(() => {
-        const reloadingListener = () => {
-            setReloading(true);
-        };
+        const historyListener = receiver("set-history", (_, id, history) => {
+            if (id !== current.id) return;
+            setHistoryPs(history);
+        });
 
-        const reloadedListener = () => {
-            setReloading(false);
-        };
-
-        const historyListener = (ev: any, p: HistoryPossibilities) => {
-            setHistoryPs(p);
-        };
-
-        Nobu.on("reloading", reloadingListener);
-        Nobu.on("reloaded", reloadedListener);
-        Nobu.on("set-history", historyListener);
-
-        return () => {
-            Nobu.off("reloading", reloadingListener);
-            Nobu.off("reloaded", reloadedListener);
-            Nobu.on("set-history", historyListener);
-        };
+        return () => historyListener.destroy();
     }, []);
 
     const handleActions = (t: keyof NobuIncomingChannels) => {
@@ -48,7 +37,7 @@ export function NavigationButtons(props: IProps) {
             case "page-reload-cancel":
             case "history-forward":
                 props.onClick?.();
-                Nobu.send(t);
+                Nobu.send(t, current.id);
                 break;
         }
     };
@@ -56,25 +45,27 @@ export function NavigationButtons(props: IProps) {
     return (
         <div className="flex space-x-4 dark:text-white text-black">
             <HistoryBack
-                disabled={!historyPs.back}
+                disabled={current.virtual || !historyPs.back}
                 onClick={() => {
                     handleActions("history-back");
                 }}
             />
             {reloading ? (
                 <HistoryReloadCancel
+                    disabled={current.virtual}
                     onClick={() => {
                         handleActions("page-reload-cancel");
                     }}
                 />
             ) : (
                 <HistoryReload
+                    disabled={current.virtual}
                     onClick={() => {
                         handleActions("page-reload");
                     }}
                 />
             )}
-            {!historyPs.forward ? null : (
+            {current.virtual || !historyPs.forward ? null : (
                 <HistoryForward
                     onClick={() => {
                         handleActions("history-forward");

@@ -1,10 +1,12 @@
-import { app, BrowserWindow, Menu } from "electron";
+import { app, BrowserWindow, Menu, session } from "electron";
 import * as path from "path";
-import { createApplicationMenu } from "./menu/appMenu";
+import { createApplicationMenu, createEmptyAppMenu } from "./menu/appMenu";
 import { NobuBrowser } from "./NobuBrowser";
-import { ProtocolList } from "./services/ProtocolServices";
+import { ProtocolList } from "./services/ProtocolService";
 import { NobuUpdater } from "./updater/NobuUpdater";
 import { isDev } from "./utils/isDev";
+import { isWindows } from "./utils/platform";
+import { USER_AGENT } from "./utils/constants";
 
 let nobu: NobuBrowser;
 
@@ -27,6 +29,11 @@ if (process.defaultApp) {
 const instanceLock = app.requestSingleInstanceLock();
 
 async function bootstrap() {
+    session.defaultSession.webRequest.onBeforeSendHeaders((details, cb) => {
+        details.requestHeaders["User-Agent"] = USER_AGENT;
+        cb({ cancel: false, requestHeaders: details.requestHeaders });
+    });
+
     let updater: NobuUpdater;
 
     if (!isDev) {
@@ -44,13 +51,16 @@ async function bootstrap() {
             (updater as NobuUpdater | null) = null;
         }
 
-        const tab = nobu.tabs.new();
-        tab.webContents.loadURL("https://www.google.com");
+        const tab = nobu.tabs.new({
+            offscreen: true
+        });
+        tab.webContents!.loadURL(nobu.getDefaultPageURL());
         nobu.create();
-        nobu.tabs.resize(tab);
+        tab.resize();
+        tab.attach();
     });
 
-    Menu.setApplicationMenu(createApplicationMenu(nobu));
+    Menu.setApplicationMenu(isWindows ? createEmptyAppMenu() : createApplicationMenu(nobu));
 }
 
 if (!instanceLock) {

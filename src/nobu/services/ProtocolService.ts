@@ -3,8 +3,6 @@ import { safeURL } from "../utils/safeURL";
 import { INobuService } from "./AbstractService";
 import { fileURLToPath } from "url";
 
-type NobuDefaultHostNames = "multiview";
-
 export const ProtocolList = {
     default: {
         name: "nobu",
@@ -25,7 +23,9 @@ function nif(p: string) {
     return p;
 }
 
-export class ProtocolServices extends INobuService {
+export class ProtocolService extends INobuService {
+    public static List = ProtocolList;
+
     private __register() {
         for (const p of Object.values(ProtocolList)) {
             if (protocol.isProtocolRegistered(p.name)) continue;
@@ -42,10 +42,15 @@ export class ProtocolServices extends INobuService {
                     const url = safeURL(req.url);
                     if (!url || !url.hostname) return returnDefault();
 
-                    const host = url.hostname as NobuDefaultHostNames;
+                    const host = url.hostname as NobuInternalPage;
 
-                    // TODO
                     switch (host) {
+                        case "settings":
+                        case "multiview-settings":
+                            return this.nobu.setRenderMode("protected", {
+                                page: host,
+                                tabId: this.nobu.tabs.currentId || undefined
+                            });
                         default:
                             return returnDefault();
                     }

@@ -1,5 +1,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
+ipcRenderer.setMaxListeners(Infinity);
+
 export const NobuBrowserContext = {
     on<K extends keyof NobuDispatchChannels>(
         channel: K,

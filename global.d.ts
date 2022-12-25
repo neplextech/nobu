@@ -4,23 +4,28 @@ declare global {
     type NobuMainListener<T> = (event: IpcMainEvent, ...args: T) => any;
 
     interface NobuDispatchChannels {
-        "set-title": [string];
-        "set-url": [string];
-        "set-history": [HistoryPossibilities];
-        "set-favicon": [string];
-        reloading: [];
-        reloaded: [];
+        "set-title": [string, string];
+        "set-url": [string, string];
+        "set-history": [string, HistoryPossibilities];
+        "set-favicon": [string, string];
+        reloading: [string];
+        reloaded: [string];
         "set-tabs": [NobuDispatchedTab[]];
-        "remove-webviews": [];
-        "add-webviews": [WebViewModeConfig[]];
-        "set-webview-url": [string];
-        "zoom-in": [number];
-        "zoom-reset": [number];
-        "zoom-out": [number];
-        "trigger-reload": [];
-        "cancel-reload": [];
+        "remove-webviews": [string];
+        "add-webviews": [string, NobuSplitView[]];
+        "set-webview-url": [string, string];
+        "zoom-in": [string, number];
+        "zoom-reset": [string, number];
+        "zoom-out": [string, number];
+        "trigger-reload": [string];
+        "trigger-back": [string];
+        "trigger-forward": [string];
+        "cancel-reload": [string];
         "network-offline-emulation": [boolean];
         "network-error": [NobuSessionNetworkError | null];
+        "split-view": [string, NobuSplitView[]];
+        "create-virtual-tab": [INobuInternalPage];
+        "nobu-settings": [NobuBrowserSetting];
     }
 
     interface NobuSessionNetworkError {
@@ -31,41 +36,76 @@ declare global {
     }
 
     interface NobuDispatchedTab {
-        id: number;
+        id: string;
         active: boolean;
         title: string;
         loading: boolean;
+        url: string;
+        icon?: string;
+        virtual?: boolean;
+        page?: NobuInternalPage;
     }
+
+    interface NobuBrowserSetting {
+        searchEngine: string;
+    }
+
+    type NobuInternalPage = "settings" | "multiview-settings";
+
+    interface INobuInternalPageConfig {
+        page: NobuInternalPage;
+        tabId?: string;
+    }
+
+    interface INobuInternalPage {
+        page: NobuInternalPage;
+        id: string;
+        title: string;
+        url: string;
+        icon?: string;
+    }
+
+    type NavigationData = string | { search: string };
 
     interface NobuIncomingChannels {
-        "history-back": [];
-        "history-forward": [];
-        "page-reload": [];
-        "page-reload-cancel": [];
-        navigate: [string];
+        "history-back": [string];
+        "history-forward": [string];
+        "page-reload": [string];
+        "page-reload-cancel": [string];
+        navigate: [string, NavigationData];
         "new-tab": [];
-        "close-tab": [number];
-        "set-tab": [number];
+        "close-tab": [string];
+        "set-tab": [string];
         "get-tabs": [];
-        "get-url": [];
-        "set-webview-mode": [WebViewModeConfig[] | string | boolean];
-        "zoom-in": [];
-        "zoom-reset": [];
-        "zoom-out": [];
+        "get-url": [string];
+        "set-splitview-mode": [string, NobuSplitView[] | null | boolean];
+        "zoom-in": [string];
+        "zoom-reset": [string];
+        "zoom-out": [string];
         "network-offline-emulation": [boolean];
         "open-multiview-settings": [];
+        __$ch: [number, number];
+        __$ready: [];
+        "set-loading": [string, boolean];
+        "set-favicon": [string, string];
+        "set-title": [string, string];
+        __$internal: [INobuInternalPageConfig | null];
+        "get-settings": [];
+        "set-settings": [NobuBrowserSetting];
     }
 
-    interface WebViewModeConfig {
+    type ViewportType = "tablet" | "mobile" | "desktop" | "custom";
+
+    interface NobuSplitView {
         url: string;
-        height: number;
-        width: number;
+        height?: number;
+        width?: number;
         ch: number;
         cw: number;
         name?: string;
         id: number;
         userAgent?: string;
-        type: "tablet" | "mobile";
+        type: ViewportType;
     }
 
     type NobuIncomingChannelsHandler = {
@@ -76,6 +116,8 @@ declare global {
         back: boolean;
         forward: boolean;
     }
+
+    type NobuRenderMode = "webview" | "default" | "protected";
 }
 
 export {};

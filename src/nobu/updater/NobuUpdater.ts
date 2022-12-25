@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import { autoUpdater } from "electron-updater";
+import { USER_AGENT } from "../utils/constants";
 
 export class NobuUpdater {
     public updater = autoUpdater;
@@ -24,6 +25,8 @@ export class NobuUpdater {
                 contextIsolation: true
             }
         });
+
+        this.window.webContents.setUserAgent(USER_AGENT);
 
         this.window.loadFile(`${__dirname}/updater.html`);
 

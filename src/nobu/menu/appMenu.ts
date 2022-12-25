@@ -42,6 +42,10 @@ function getEditSubMenu(): Electron.MenuItemConstructorOptions[] {
     return [{ role: "delete" }, { type: "separator" }, { role: "selectAll" }];
 }
 
+export function createEmptyAppMenu() {
+    return Menu.buildFromTemplate([]);
+}
+
 export function createApplicationMenu(nobu: NobuBrowser) {
     const template: Electron.MenuItemConstructorOptions[] = [
         {
@@ -63,8 +67,9 @@ export function createApplicationMenu(nobu: NobuBrowser) {
                     click() {
                         if (nobu.renderMode === "default") {
                             if (!nobu.tabs.current) return;
-                            const url = nobu.tabs.getCurrentURL()!;
-                            const screens: WebViewModeConfig[] = getDefaultScreens(url);
+                            const url = nobu.tabs.current?.getCurrentURL();
+                            if (!url) return;
+                            const screens: NobuSplitView[] = getDefaultScreens(url);
 
                             nobu.setRenderMode("webview", screens);
                         } else {
@@ -76,7 +81,7 @@ export function createApplicationMenu(nobu: NobuBrowser) {
                 {
                     label: "Toggle Adblocker",
                     async click() {
-                        const service = nobu.services.getService<AdblockerService>("adblocker");
+                        const service = nobu.services.getService("adblocker");
                         if (!service) return;
                         if (!service.enabled) {
                             await service.enable();

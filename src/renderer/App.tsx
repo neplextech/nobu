@@ -1,117 +1,89 @@
-import { useEffect, useState } from "react";
-import { MultiView } from "./components/MultiView/MultiView";
-import { WebView } from "./components/MultiView/WebView";
-import { ActionNavigation } from "./components/Navigation/ActionNavigation";
-import { ErrorPage } from "./components/pages/ErrorPage";
-import { MultiRender } from "./components/Settings/MultiRender";
+import { useEffect, useRef, useState } from "react";
+import { receiver } from "./utils/nobu";
+import { ActionBar } from "./components/Action/ActionBar";
+import { ContentArea } from "./components/Content/ContentArea";
+import { NobuTabContext } from "./context/TabContext";
 
 export default function App() {
-    const [webviewPages, setWebviewPages] = useState<WebViewModeConfig[]>([]);
-    const [mobileViews, setMobileViews] = useState<WebViewModeConfig[]>([]);
-    const [tabletViews, setTabletViews] = useState<WebViewModeConfig[]>([]);
-    const [showMultiRenderSettingPage, setShowMultiRenderSettingPage] = useState(false);
-    const [isContentLoading, setIsContentLoading] = useState(false);
-    const [errorPage, setErrorPage] = useState<NobuSessionNetworkError | null>(null);
+    const [tabs, setTabs] = useState<NobuDispatchedTab[]>([]);
+    const [currentTab, setCurrentTab] = useState<NobuDispatchedTab | null>(null);
+    const [splitView, setSplitView] = useState<(NobuSplitView & { tabId: string })[]>([]);
 
     useEffect(() => {
-        setMobileViews(webviewPages.filter((r) => r.type === "mobile"));
-        setTabletViews(webviewPages.filter((r) => r.type === "tablet"));
-    }, [webviewPages]);
+        Nobu.send("get-tabs");
+        Nobu.send("__$ready");
+    }, []);
 
     useEffect(() => {
-        Nobu.on("add-webviews", (ev, data) => {
-            setShowMultiRenderSettingPage(false);
-            setWebviewPages(data);
+        const current = tabs.find((r) => r.active) || tabs[0];
+        if (current) document.title = current.title || "Nobu Browser";
+        setCurrentTab(current || null);
+    }, [tabs]);
+
+    useEffect(() => {
+        const tabsListener = receiver("set-tabs", (_, tabs) => {
+            setTabs(tabs);
+        });
+        const addressRec = receiver("set-url", (_, id, url) => {
+            if (tabs.some((tab) => tab.id === id)) {
+                setTabs((prev) =>
+                    prev.map((m) => ({
+                        ...m,
+                        url: m.id === id ? url : m.url
+                    }))
+                );
+            }
         });
 
-        Nobu.on("remove-webviews", () => {
-            setShowMultiRenderSettingPage(false);
-            setWebviewPages([]);
+        const splitListener = receiver("split-view", (_, id, data) => {
+            if (!Array.isArray(data)) return setSplitView([]);
+
+            setSplitView(
+                data.map((m) => ({
+                    ...m,
+                    tabId: id
+                }))
+            );
         });
 
-        Nobu.on("set-webview-url", (ev, url) => {
-            setWebviewPages((p) => p.map((m) => ({ ...m, url })));
+        const wvUrlListener = receiver("set-webview-url", (_, id, url) => {
+            setSplitView((p) => p.map((m) => ({ ...m, url: m.tabId === id ? url : m.url })));
         });
 
-        Nobu.on("network-error", (_, data) => {
-            setErrorPage(data);
+        const vTabL = receiver("create-virtual-tab", (_, config) => {
+            setTabs((prev) => {
+                (prev = prev
+                    .filter((r) => r.id !== config.id)
+                    .map((m) => ({ ...m, active: false })) as typeof prev).push({
+                    ...config,
+                    active: true,
+                    loading: false,
+                    virtual: true
+                });
+                return prev;
+            });
         });
 
         return () => {
-            Nobu.off("add-webviews");
-            Nobu.off("remove-webviews");
-            Nobu.off("set-webview-url");
-            Nobu.off("network-error");
+            tabsListener.destroy();
+            addressRec.destroy();
+            splitListener.destroy();
+            wvUrlListener.destroy();
+            vTabL.destroy();
         };
     }, []);
 
     return (
-        <div className="dark:bg-xdark select-none bg-xlight overflow-hidden flex flex-col space-y-28 max-h-screen">
-            <ActionNavigation
-                loading={isContentLoading}
-                onContentSet={(c) => {
-                    switch (c) {
-                        case "multi-render-settings":
-                            setShowMultiRenderSettingPage(true);
-                            break;
-                        case "none":
-                            setShowMultiRenderSettingPage(false);
-                        default:
-                            break;
-                    }
-                }}
-            />
-            <div className={"h-screen select-none bg-inherit overflow-auto px-5"}>
-                {errorPage ? (
-                    <ErrorPage details={errorPage} />
-                ) : (
-                    <>
-                        {showMultiRenderSettingPage ? (
-                            <MultiRender />
-                        ) : webviewPages.length ? (
-                            <div className="w-full dark:text-white light:text-black">
-                                <h1 className="text-3xl text-center">Multi Screen Preview</h1>
-                                {webviewPages.length === 1 ? (
-                                    <WebView
-                                        style={{
-                                            height: webviewPages[0].height
-                                        }}
-                                        src={webviewPages[0].url}
-                                    />
-                                ) : (
-                                    <div className="flex flex-col items-center justify-center space-y-5">
-                                        <div>
-                                            <h1 className="text-lg">Mobile Screens</h1>
-                                            <MultiView
-                                                pages={mobileViews}
-                                                phone
-                                                onStartLoading={() => {
-                                                    setIsContentLoading(true);
-                                                }}
-                                                onStopLoading={() => {
-                                                    setIsContentLoading(false);
-                                                }}
-                                            />
-                                        </div>
-                                        <div>
-                                            <h1 className="text-lg">Tablet Screens</h1>
-                                            <MultiView
-                                                pages={tabletViews}
-                                                onStartLoading={() => {
-                                                    setIsContentLoading(true);
-                                                }}
-                                                onStopLoading={() => {
-                                                    setIsContentLoading(false);
-                                                }}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : null}
-                    </>
-                )}
+        <NobuTabContext.Provider
+            value={{
+                current: currentTab!,
+                tabs
+            }}
+        >
+            <div className="dark:bg-xdark select-none bg-xlight overflow-hidden flex flex-col space-y-28 max-h-screen">
+                <ActionBar setTabs={setTabs} />
+                {currentTab ? <ContentArea tab={currentTab} split={splitView} /> : null}
             </div>
-        </div>
+        </NobuTabContext.Provider>
     );
 }

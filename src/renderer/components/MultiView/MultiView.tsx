@@ -1,20 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { VscChromeMaximize, VscInspect, VscLoading, VscZoomIn, VscZoomOut } from "react-icons/vsc";
 import { WebView, WebViewTagElement } from "./WebView";
+import { receiver } from "../../utils/nobu";
+import { formatAddress } from "../../utils/formatAddress";
 
 interface IProps {
-    pages: WebViewModeConfig[];
+    pages: (NobuSplitView & { tabId: string })[];
     phone?: boolean;
     onStartLoading?: () => void;
     onStopLoading?: () => void;
 }
 
 export function MultiView(props: IProps) {
-    const { pages, phone, onStartLoading, onStopLoading } = props;
+    const { pages, phone = false, onStartLoading, onStopLoading } = props;
 
     return (
         <div className="overflow-auto mb-[70px]">
-            <div className={`grid ${phone ? "lg:grid-cols-3 grid-cols-1" : "grid-cols-1"} gap-2`}>
+            <div className={`grid ${phone ? "lg:grid-cols-3 grid-cols-1" : "grid-cols-1"} gap-2 mb-5`}>
                 {pages.map((m, i) => {
                     return (
                         <InternalView data={m} key={i} onStartLoading={onStartLoading} onStopLoading={onStopLoading} />
@@ -26,18 +28,25 @@ export function MultiView(props: IProps) {
 }
 
 interface InternalProps {
-    data: WebViewModeConfig;
+    data: NobuSplitView & { tabId: string };
     onStartLoading?: () => void;
     onStopLoading?: () => void;
 }
 
-type InternalWebviewAction = "open-devtools" | "zoom-in" | "zoom-out" | "zoom-reset" | "reload" | "cancel-reload";
+type InternalWebviewAction =
+    | "open-devtools"
+    | "zoom-in"
+    | "zoom-out"
+    | "zoom-reset"
+    | "reload"
+    | "cancel-reload"
+    | "back"
+    | "forward";
 
 const globalNonceStore = new Set<number>();
 
 export function InternalView(props: InternalProps) {
     const { data, onStartLoading, onStopLoading } = props;
-
     const currentViewRef = useRef<WebViewTagElement>(null);
 
     const execAction = (action: InternalWebviewAction) => {
@@ -47,7 +56,6 @@ export function InternalView(props: InternalProps) {
         switch (action) {
             case "open-devtools":
                 {
-                    console.log(webview.openDevTools());
                     if (!webview.isDevToolsOpened()) webview.openDevTools();
                 }
                 break;
@@ -65,6 +73,12 @@ export function InternalView(props: InternalProps) {
             case "reload":
                 webview.reload();
                 break;
+            case "back":
+                if (webview.canGoBack()) webview.goBack();
+                break;
+            case "forward":
+                if (webview.canGoForward()) webview.reload();
+                break;
             case "cancel-reload":
                 webview.stop();
                 break;
@@ -74,42 +88,46 @@ export function InternalView(props: InternalProps) {
     };
 
     useEffect(() => {
-        const zoomInlistener = (_: any, n: number) => {
+        const zoomInlistener = receiver("zoom-in", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-in");
-        };
-        const zoomResetlistener = (_: any, n: number) => {
+        });
+        const zoomResetlistener = receiver("zoom-reset", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-reset");
-        };
-        const zoomOutlistener = (_: any, n: number) => {
+        });
+        const zoomOutlistener = receiver("zoom-out", (_, id, n) => {
             if (globalNonceStore.has(n)) return;
             globalNonceStore.add(n);
             execAction("zoom-out");
-        };
+        });
 
-        const triggerReloadListener = (_: any) => {
+        const triggerReloadListener = receiver("trigger-reload", () => {
             execAction("reload");
-        };
+        });
 
-        const cancelReloadListener = (_: any) => {
+        const triggerBackListener = receiver("trigger-back", () => {
+            execAction("back");
+        });
+
+        const triggerForwardListener = receiver("trigger-forward", () => {
+            execAction("forward");
+        });
+
+        const cancelReloadListener = receiver("cancel-reload", () => {
             execAction("cancel-reload");
-        };
-
-        Nobu.on("zoom-in", zoomInlistener);
-        Nobu.on("zoom-reset", zoomResetlistener);
-        Nobu.on("zoom-out", zoomOutlistener);
-        Nobu.on("trigger-reload", triggerReloadListener);
-        Nobu.on("cancel-reload", cancelReloadListener);
+        });
 
         return () => {
-            Nobu.off("zoom-in", zoomInlistener);
-            Nobu.off("zoom-reset", zoomResetlistener);
-            Nobu.off("zoom-out", zoomOutlistener);
-            Nobu.off("trigger-reload", triggerReloadListener);
-            Nobu.off("cancel-reload", cancelReloadListener);
+            zoomInlistener.destroy();
+            zoomOutlistener.destroy();
+            zoomResetlistener.destroy();
+            triggerReloadListener.destroy();
+            triggerBackListener.destroy();
+            triggerForwardListener.destroy();
+            cancelReloadListener.destroy();
         };
     }, []);
 
@@ -117,7 +135,7 @@ export function InternalView(props: InternalProps) {
         <div>
             <div className={`flex space-x-2`}>
                 <h1 className="text-sm">
-                    {data.name || `Screen-${data.id}`} | ({data.height}x{data.width})
+                    {data.name || `Screen-${data.id}`} | ({data.width}x{data.height})
                 </h1>
                 <div className="flex space-x-2">
                     <VscInspect
@@ -135,9 +153,26 @@ export function InternalView(props: InternalProps) {
                     width: data.cw,
                     height: data.ch
                 }}
-                onLoadStart={() => onStartLoading?.()}
-                onDidStopLoading={() => onStopLoading?.()}
-                useragent={data.userAgent || undefined}
+                onWillNavigate={(ev) => {
+                    Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                }}
+                onDidNavigateInPage={(ev) => {
+                    // in-page navigations have some problems
+                    Nobu.send("navigate", data.tabId, formatAddress(ev.url));
+                }}
+                onPageTitleUpdated={(ev) => {
+                    Nobu.send("set-title", data.tabId, ev.title);
+                }}
+                onPageFaviconUpdated={(ev) => {
+                    Nobu.send("set-favicon", data.tabId, ev.favicons[0]);
+                }}
+                onDidStartLoading={() => {
+                    Nobu.send("set-loading", data.tabId, true);
+                }}
+                onDidStopLoading={() => {
+                    Nobu.send("set-loading", data.tabId, false);
+                }}
+                // useragent={data.userAgent || undefined}
                 className="border dark:border-gray-500 border-gray-300 bg-slate-300"
             ></WebView>
         </div>
