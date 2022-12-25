@@ -6,6 +6,7 @@ export function reactiveSetter<T extends object, K extends keyof T>(
     onSet: OnSetCallback<K, T[K]>
 ) {
     return new Proxy(target, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         set(target, p: any, newValue) {
             if (keys.includes(p)) onSet(p, newValue);
             return Reflect.set(target, p, newValue);

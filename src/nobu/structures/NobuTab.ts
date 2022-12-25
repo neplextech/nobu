@@ -9,14 +9,14 @@ interface INobuTabConfig {
 }
 
 interface WebContentEvents {
-    "will-navigate": (event: Electron.Event, url: string) => any;
-    "did-navigate-in-page": (event: Electron.Event, url: string) => any;
-    "did-finish-load": (event: Electron.Event) => any;
-    "did-stop-loading": (event: Electron.Event) => any;
-    "did-start-loading": (event: Electron.Event) => any;
-    "page-title-updated": (event: Electron.Event, title: string) => any;
-    "page-favicon-updated": (event: Electron.Event, icons: string[]) => any;
-    "context-menu": (event: Electron.Event, params: Electron.ContextMenuParams) => any;
+    "will-navigate": (event: Electron.Event, url: string) => unknown;
+    "did-navigate-in-page": (event: Electron.Event, url: string) => unknown;
+    "did-finish-load": (event: Electron.Event) => unknown;
+    "did-stop-loading": (event: Electron.Event) => unknown;
+    "did-start-loading": (event: Electron.Event) => unknown;
+    "page-title-updated": (event: Electron.Event, title: string) => unknown;
+    "page-favicon-updated": (event: Electron.Event, icons: string[]) => unknown;
+    "context-menu": (event: Electron.Event, params: Electron.ContextMenuParams) => unknown;
 }
 
 export class NobuTab {
@@ -38,7 +38,7 @@ export class NobuTab {
     };
 
     private _channels = Object.entries({
-        "did-finish-load": (event) => {
+        "did-finish-load": () => {
             if (!this.view) return;
             this.nobu.send("reloaded", this.id);
             this.setURL(this.getCurrentURL());
@@ -48,12 +48,12 @@ export class NobuTab {
             this.setURL(url);
             this.nobu.tabs.broadcastTabs();
         },
-        "did-start-loading": (event) => {
+        "did-start-loading": () => {
             this.setURL(this.getCurrentURL());
             this.nobu.send("reloading", this.id);
             this.nobu.tabs.broadcastTabs();
         },
-        "did-stop-loading": (event) => {
+        "did-stop-loading": () => {
             this.setURL(this.getCurrentURL());
             this.nobu.send("reloaded", this.id);
             this.nobu.tabs.broadcastTabs();
@@ -217,7 +217,9 @@ export class NobuTab {
         if (!this.view || this.config.renderer !== "default") return;
         try {
             this.nobu.window.addBrowserView(this.view);
-        } catch {}
+        } catch {
+            /* catch */
+        }
     }
 
     public remove() {
