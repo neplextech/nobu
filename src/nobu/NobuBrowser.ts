@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, session, webContents } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, shell, session } from "electron";
 import { BrowserTabsManager } from "./manager/BrowserTabsManager";
 import { NobuServiceManager } from "./manager/NobuServiceManager";
 import { getDefaultScreens } from "./screens/createScreens";
@@ -6,7 +6,6 @@ import { AdblockerService } from "./services/AdblockerService";
 import { ProtocolService } from "./services/ProtocolService";
 import { isDev } from "./utils/isDev";
 import { EventEmitter } from "./utils/EventEmitter";
-import { isWindows } from "./utils/platform";
 import { NobuTab } from "./structures/NobuTab";
 import { StorageService } from "./services/StorageService";
 import { resolveSearchEngine, resolveSearchEngineName } from "./utils/resolveSearchEngine";
@@ -30,7 +29,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
     public SPACING_TABS = NobuBrowser.SPACING_TABS;
     public SPACING_FULLSCREEN = NobuBrowser.SPACING_FULLSCREEN;
     public CLIENT_SPACING: number = this.SPACING_TABS;
-    public CLIENT_HEIGHT: number = 0;
+    public CLIENT_HEIGHT = 0;
     public userAgent = USER_AGENT;
     public ICON_PATH = `file://${__dirname}/../public/nobu.png` as const;
     public tabs = new BrowserTabsManager(this);
@@ -43,11 +42,11 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be deleted in multi-views mode");
             this.tabs.destroy(id, true);
         },
-        "history-back": (event) => {
+        "history-back": () => {
             if (this.renderMode === "webview") return this.send("trigger-back", this.tabs.currentId!);
             this.tabs.current?.goBack();
         },
-        "history-forward": (event) => {
+        "history-forward": () => {
             if (this.renderMode === "webview") return this.send("trigger-forward", this.tabs.currentId!);
             this.tabs.current?.goForward();
         },
@@ -59,7 +58,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
             this.send("set-url", id, url);
             if (this.renderMode === "webview") this.send("set-webview-url", id, url);
         },
-        "new-tab": (event) => {
+        "new-tab": () => {
             if (this.renderMode === "webview") return this.alert("Tabs cannot be created in multi-views mode");
             const tab = this.tabs.new();
             tab.webContents?.loadURL(this.getDefaultPageURL());
@@ -78,7 +77,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         "set-tab": (event, id) => {
             if (this.renderMode === "default") this.tabs.setCurrentTab(id);
         },
-        "get-tabs": (event) => {
+        "get-tabs": () => {
             this.tabs.broadcastTabs();
         },
         "get-url": (event, id) => {
@@ -139,7 +138,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
                     tabId: config.tabId
                 });
         },
-        "get-settings": (_) => {
+        "get-settings": () => {
             const settings = this.services.getService("store").settings.store;
             const data = {
                 ...settings,
@@ -268,7 +267,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
 
     public close() {
         this._removeListeners();
-        for (const [_, v] of this.tabs.cache) {
+        for (const v of this.tabs.cache.values()) {
             this.tabs.destroy(v, false);
         }
         this.window.destroy();
@@ -288,7 +287,7 @@ export class NobuBrowser extends EventEmitter<INobuEventsMap> {
         if (mode === "protected") {
             const iconfig = config as INobuInternalPageConfig;
             if (this.tabs.has(iconfig.tabId!)) {
-                var tab = this.tabs.get(iconfig.tabId!)!;
+                const tab = this.tabs.get(iconfig.tabId!)!;
                 tab.webContents?.setAudioMuted(true);
                 tab.remove();
             } else {

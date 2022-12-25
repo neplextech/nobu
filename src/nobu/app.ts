@@ -11,10 +11,12 @@ import { USER_AGENT } from "./utils/constants";
 let nobu: NobuBrowser;
 
 process.on("uncaughtException", (...params) => {
+    // eslint-disable-next-line no-console
     if (isDev) console.log(...params);
 });
 
 process.on("unhandledRejection", (...params) => {
+    // eslint-disable-next-line no-console
     if (isDev) console.log(...params);
 });
 
