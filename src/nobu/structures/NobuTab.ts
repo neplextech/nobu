@@ -227,7 +227,9 @@ export class NobuTab {
         this._removeListeners();
         try {
             this.nobu.window.removeBrowserView(this.view);
-        } catch {}
+        } catch {
+            /* catch */
+        }
     }
 
     public get webContents() {
