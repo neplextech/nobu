@@ -20,14 +20,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/skdhg/nobu.git"
+    "url": "git+https://github.com/neplextech/nobu.git"
   },
   "author": "skdhg",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/skdhg/nobu/issues"
+    "url": "https://github.com/neplextech/nobu/issues"
   },
-  "homepage": "https://github.com/skdhg/nobu#readme",
+  "homepage": "https://github.com/neplextech/nobu#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.3.0",
     "@commitlint/config-angular": "^17.3.0",
