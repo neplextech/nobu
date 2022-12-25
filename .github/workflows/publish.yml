@@ -17,6 +17,8 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
+            - name: Lint
+              run: yarn lint
             - name: Build
               run: npm run build
             - name: Publish
@@ -32,6 +34,8 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
+            - name: Lint
+              run: yarn lint
             - name: Build
               run: npm run build
             - name: Publish
@@ -47,6 +51,8 @@ jobs:
                   node-version: "18.12.1"
             - name: Install dependencies
               run: yarn install
+            - name: Lint
+              run: yarn lint
             - name: Build
               run: npm run build
             - name: Publish
