@@ -28,7 +28,7 @@ export class NobuTab {
     public favicon!: string;
     public title!: string;
     public id = NobuTab.generateId();
-    public view: BrowserView | null = null;
+    public view!: BrowserView;
     private __resizeListener = () => this.resize();
     private __readyListener = () => {
         if (this.active) {
@@ -41,6 +41,7 @@ export class NobuTab {
         "did-finish-load": (event) => {
             if (!this.view) return;
             this.nobu.send("reloaded", this.id);
+            this.setURL(this.getCurrentURL());
             this.nobu.tabs.broadcastTabs();
         },
         "did-navigate-in-page": (event, url) => {
@@ -48,16 +49,18 @@ export class NobuTab {
             this.nobu.tabs.broadcastTabs();
         },
         "did-start-loading": (event) => {
+            this.setURL(this.getCurrentURL());
             this.nobu.send("reloading", this.id);
             this.nobu.tabs.broadcastTabs();
         },
         "did-stop-loading": (event) => {
-            this.setURL(this.getCurrentURL()!);
+            this.setURL(this.getCurrentURL());
             this.nobu.send("reloaded", this.id);
             this.nobu.tabs.broadcastTabs();
         },
         "page-title-updated": (event, title) => {
             this.setTitle(title);
+            this.setURL(this.getCurrentURL());
             this.nobu.tabs.broadcastTabs();
         },
         "will-navigate": (event, url) => {
@@ -184,7 +187,7 @@ export class NobuTab {
         if (this.view) {
             this.remove();
             (this.view.webContents as any).destroy?.();
-            this.view = null;
+            (this.view as any) = null;
 
             this.nobu.tabs.cache.delete(this.id);
         }

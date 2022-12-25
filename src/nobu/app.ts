@@ -57,6 +57,7 @@ async function bootstrap() {
         tab.webContents!.loadURL(nobu.getDefaultPageURL());
         nobu.create();
         tab.resize();
+        tab.attach();
     });
 
     Menu.setApplicationMenu(isWindows ? createEmptyAppMenu() : createApplicationMenu(nobu));

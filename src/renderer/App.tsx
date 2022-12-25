@@ -11,6 +11,7 @@ export default function App() {
 
     useEffect(() => {
         Nobu.send("get-tabs");
+        Nobu.send("__$ready");
     }, []);
 
     useEffect(() => {
