@@ -28,8 +28,6 @@ if (process.defaultApp) {
     app.setAsDefaultProtocolClient(ProtocolList.default.name);
 }
 
-const instanceLock = app.requestSingleInstanceLock();
-
 async function bootstrap() {
     session.defaultSession.webRequest.onBeforeSendHeaders((details, cb) => {
         details.requestHeaders["User-Agent"] = USER_AGENT;
@@ -65,13 +63,27 @@ async function bootstrap() {
     Menu.setApplicationMenu(isWindows ? createEmptyAppMenu() : createApplicationMenu(nobu));
 }
 
-if (!instanceLock) {
+if (isWindows && !app.requestSingleInstanceLock()) {
     app.quit();
 } else {
     app.on("second-instance", () => {
         if (nobu) {
             if (nobu.window.isMinimized()) nobu.window.restore();
             nobu.window.focus();
+        }
+    });
+
+    app.on("open-url", (ev, url) => {
+        if (nobu) {
+            ev.preventDefault();
+            const protocolService = nobu.services.getService("protocol");
+            protocolService.handle(url);
+        }
+    });
+
+    app.on("window-all-closed", () => {
+        if (process.platform !== "darwin") {
+            app.quit();
         }
     });
 
@@ -83,11 +95,5 @@ if (!instanceLock) {
                 bootstrap();
             }
         });
-    });
-
-    app.on("window-all-closed", () => {
-        if (process.platform !== "darwin") {
-            app.quit();
-        }
     });
 }

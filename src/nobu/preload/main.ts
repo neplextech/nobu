@@ -11,14 +11,12 @@ export const NobuBrowserContext = {
     ) {
         ipcRenderer.on(channel, listener as any);
     },
-
     once<K extends keyof NobuDispatchChannels>(
         channel: K,
         listener: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
     ) {
         ipcRenderer.once(channel, listener as any);
     },
-
     off<K extends keyof NobuDispatchChannels>(
         channel: K,
         listener?: (ev: IpcRendererEvent, ...args: NobuDispatchChannels[K]) => any
@@ -29,9 +27,17 @@ export const NobuBrowserContext = {
             ipcRenderer.removeAllListeners(channel);
         }
     },
-
     send<K extends keyof NobuIncomingChannels>(channel: K, ...message: NobuIncomingChannels[K]) {
         ipcRenderer.send(channel as unknown as string, ...(message as any[]));
+    },
+    isWindows() {
+        return process.platform === "win32";
+    },
+    isMacOS() {
+        return process.platform === "darwin";
+    },
+    isLinux() {
+        return process.platform === "linux";
     }
 };
 

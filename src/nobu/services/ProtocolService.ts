@@ -26,34 +26,48 @@ export const ProtocolList = {
 export class ProtocolService extends INobuService {
     public static List = ProtocolList;
 
+    public handle(url: string) {
+        try {
+            const u = new URL(url);
+            if (u.protocol === "nobu:") return this.__handler(url, ProtocolList.default);
+        } catch {
+            return;
+        }
+    }
+
+    private __handler(reqUrl: string, p?: typeof ProtocolList[keyof typeof ProtocolList], cb?: (s: string) => unknown) {
+        if (!p) return;
+        const returnDefault = () => {
+            const u = `file://${reqUrl.slice((p.name + "://").length)}`;
+            cb?.(fileURLToPath(u));
+        };
+
+        if (p.name === "nobu-file" || p.name === "nobu-settings") return returnDefault();
+
+        const url = safeURL(reqUrl);
+        if (!url || !url.hostname) return returnDefault();
+
+        const host = url.hostname as NobuInternalPage;
+
+        switch (host) {
+            case "settings":
+            case "multiview-settings":
+                return this.nobu.setRenderMode("protected", {
+                    page: host,
+                    tabId: this.nobu.tabs.currentId || undefined
+                });
+            default:
+                return returnDefault();
+        }
+    }
+
     private __register() {
         for (const p of Object.values(ProtocolList)) {
             if (protocol.isProtocolRegistered(p.name)) continue;
 
             if (p.type === "file")
                 protocol.registerFileProtocol(p.name, (req, cb) => {
-                    const returnDefault = () => {
-                        const u = `file://${req.url.slice((p.name + "://").length)}`;
-                        cb(fileURLToPath(u));
-                    };
-
-                    if (p.name === "nobu-file" || p.name === "nobu") return returnDefault();
-
-                    const url = safeURL(req.url);
-                    if (!url || !url.hostname) return returnDefault();
-
-                    const host = url.hostname as NobuInternalPage;
-
-                    switch (host) {
-                        case "settings":
-                        case "multiview-settings":
-                            return this.nobu.setRenderMode("protected", {
-                                page: host,
-                                tabId: this.nobu.tabs.currentId || undefined
-                            });
-                        default:
-                            return returnDefault();
-                    }
+                    this.__handler(req.url, p, cb);
                 });
         }
     }
