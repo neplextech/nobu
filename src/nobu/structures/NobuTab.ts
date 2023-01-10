@@ -110,6 +110,7 @@ export class NobuTab {
         if (!this.view) return;
         const view = this.view;
         this._channels.forEach(([name, listener]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             view.webContents.on(name as any, listener);
         });
         view.webContents.setWindowOpenHandler((details) => {
@@ -124,6 +125,7 @@ export class NobuTab {
         const view = this.view;
 
         this._channels.forEach(([name, listener]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             view.webContents.off(name as any, listener);
         });
     }
@@ -186,8 +188,10 @@ export class NobuTab {
     public close() {
         if (this.view) {
             this.remove();
+            /* eslint-disable @typescript-eslint/no-explicit-any */
             (this.view.webContents as any).destroy?.();
             (this.view as any) = null;
+            /* eslint-enable @typescript-eslint/no-explicit-any */
 
             this.nobu.tabs.cache.delete(this.id);
         }
